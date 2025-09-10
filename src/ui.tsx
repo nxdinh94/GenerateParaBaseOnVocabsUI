@@ -39,6 +39,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ParagraphController } from './controllers/paragraphController';
+import { formatTextWithHighlights, extractPlainText, hasHighlights } from './lib/textFormatter';
 
 // Types
 interface GeneratedParagraph {
@@ -576,7 +577,13 @@ const VocabularyLearningWebsite: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigator.clipboard.writeText(currentParagraph)}
+                onClick={() => {
+                  // Extract plain text for clipboard copy
+                  const plainText = hasHighlights(currentParagraph) 
+                    ? extractPlainText(currentParagraph) 
+                    : currentParagraph;
+                  navigator.clipboard.writeText(plainText);
+                }}
               >
                 <Copy className="h-4 w-4 mr-2" />
                 Copy
@@ -621,7 +628,9 @@ const VocabularyLearningWebsite: React.FC = () => {
               </div>
             </div>
           ) : currentParagraph ? (
-            <p className="text-foreground leading-relaxed">{currentParagraph}</p>
+            <div className="text-foreground leading-relaxed">
+              {formatTextWithHighlights(currentParagraph)}
+            </div>
           ) : (
             <p className="text-muted-foreground italic">
               Enter some vocabularies and click "Generate Paragraph" to get started.
@@ -653,7 +662,12 @@ const VocabularyLearningWebsite: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigator.clipboard.writeText(item.content)}
+                    onClick={() => {
+                      const plainText = hasHighlights(item.content) 
+                        ? extractPlainText(item.content) 
+                        : item.content;
+                      navigator.clipboard.writeText(plainText);
+                    }}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -672,7 +686,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               <p className="text-sm text-muted-foreground mb-2">
                 {item.timestamp.toLocaleDateString()} • {item.settings.language} • {item.settings.level}
               </p>
-              <p className="text-foreground">{item.content}</p>
+              <div className="text-foreground">{formatTextWithHighlights(item.content)}</div>
             </Card>
           ))}
         </div>
@@ -701,7 +715,12 @@ const VocabularyLearningWebsite: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigator.clipboard.writeText(item.content)}
+                    onClick={() => {
+                      const plainText = hasHighlights(item.content) 
+                        ? extractPlainText(item.content) 
+                        : item.content;
+                      navigator.clipboard.writeText(plainText);
+                    }}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -719,7 +738,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               <p className="text-sm text-muted-foreground mb-2">
                 Saved on {item.timestamp.toLocaleDateString()} • {item.settings.language} • {item.settings.level}
               </p>
-              <p className="text-foreground">{item.content}</p>
+              <div className="text-foreground">{formatTextWithHighlights(item.content)}</div>
             </Card>
           ))}
         </div>

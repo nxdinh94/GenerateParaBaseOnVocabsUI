@@ -1,5 +1,6 @@
 // API Service for handling HTTP requests
 import { apiClient, handleApiError } from './apiClient';
+import { highlightVocabularies } from '../utits/hightlight_vocabs';
 
 export interface GenerateParagraphRequest {
   vocabularies: string[];
@@ -26,12 +27,15 @@ export interface GenerateParagraphResponse {
 }
 
 // Helper function to map API response to our expected format
-const mapApiResponse = (apiResponse: ApiParagraphResponse): GenerateParagraphResponse => {
+const mapApiResponse = (apiResponse: ApiParagraphResponse, vocabularies: string[]): GenerateParagraphResponse => {
   if (apiResponse.status && apiResponse.result) {
+    // Use the new token-based highlighting approach
+    const highlightedParagraph = highlightVocabularies(apiResponse.result, vocabularies);
+    
     return {
       success: true,
       data: {
-        paragraph: apiResponse.result,
+        paragraph: highlightedParagraph,
         message: 'Paragraph generated successfully'
       }
     };
@@ -78,8 +82,8 @@ export class ApiService {
       // The response.data should contain the API response
       const apiResponse = response.data as unknown as ApiParagraphResponse;
       
-      // Map the API response to our expected format
-      return mapApiResponse(apiResponse);
+      // Map the API response to our expected format with vocabulary highlighting
+      return mapApiResponse(apiResponse, requestData.vocabularies);
     } catch (error) {
       console.error('Generate paragraph failed:', error);
       
