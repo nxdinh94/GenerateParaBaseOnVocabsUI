@@ -2,7 +2,9 @@
 export { apiClient, handleApiError, API_BASE_URL } from './apiClient';
 export { ApiService } from './apiService';
 export { UserApiService } from './userApiService';
+export { VocabSuggestionsService } from './vocabSuggestionsService';
 
 // Export types
 export type { GenerateParagraphRequest, GenerateParagraphResponse } from './apiService';
 export type { User, LoginRequest, LoginResponse } from './userApiService';
+export type { VocabSuggestionsResponse, VocabFrequency } from '../types/api';

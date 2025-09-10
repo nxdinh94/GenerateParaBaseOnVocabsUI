@@ -1,22 +1,43 @@
-import { ApiService } from '../services/apiService';
-import type { GenerateParagraphRequest, GenerateParagraphResponse } from '../services/apiService';
-
-export interface ParagraphSettings {
-  language: string;
-  length: 'short' | 'medium' | 'long' | 'custom';
-  customLength?: number;
-  level: 'none' | 'beginner' | 'intermediate' | 'advanced';
-  topic: string;
-  customTopic?: string;
-  tone: 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic';
-}
+// Paragraph Controller - handles UI logic and coordinates with services
+import { ParagraphService } from '../services/paragraphService';
+import { SavedParagraphService } from '../services/savedParagraphService';
+import type { 
+  GenerateParagraphRequest, 
+  GenerateParagraphResponse,
+  SaveParagraphRequest,
+  SavedParagraphsResponse,
+  ParagraphSettings
+} from '../types/api';
 
 export class ParagraphController {
-  static async generateParagraph(
+  private paragraphService: ParagraphService;
+  private savedParagraphService: SavedParagraphService;
+
+  constructor() {
+    this.paragraphService = new ParagraphService();
+    this.savedParagraphService = new SavedParagraphService();
+  }
+
+  /**
+   * Generate a new paragraph with vocabulary highlighting
+   */
+  async generateParagraph(
     vocabularies: string[],
     settings: ParagraphSettings
   ): Promise<GenerateParagraphResponse> {
     try {
+      console.log('ParagraphController: Generating paragraph');
+      console.log('Vocabularies:', vocabularies);
+      console.log('Settings:', settings);
+
+      // Validate input data
+      if (!vocabularies || vocabularies.length === 0) {
+        return {
+          success: false,
+          error: 'At least one vocabulary word is required'
+        };
+      }
+
       // Convert length to number for API
       let paragraphLength: number | string = 0;
       if (settings.length === 'short') paragraphLength = 70;
@@ -39,22 +60,125 @@ export class ParagraphController {
       };
 
       // Log the request data for debugging
-      console.log('=== API Request Debug Info ===');
+      console.log('=== Controller: API Request Debug Info ===');
       console.log('Original vocabularies:', vocabularies);
       console.log('Original settings:', settings);
       console.log('Processed request data:', JSON.stringify(requestData, null, 2));
       console.log('=== End Debug Info ===');
 
-      // Call the API service
-      const response = await ApiService.generateParagraph(requestData);
-      
-      return response;
+      // Validate request using service validation
+      const validation = this.paragraphService.validateRequest(requestData);
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        };
+      }
+
+      // Call the paragraph service
+      const result = await this.paragraphService.generateParagraph(requestData);
+      return result;
     } catch (error) {
-      console.error('Error generating paragraph:', error);
+      console.error('ParagraphController: Generate paragraph error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Failed to generate paragraph'
       };
     }
   }
+
+  /**
+   * Get all saved paragraphs
+   */
+  async getSavedParagraphs(): Promise<SavedParagraphsResponse> {
+    try {
+      console.log('ParagraphController: Getting saved paragraphs');
+      const result = await this.savedParagraphService.getAllParagraphs();
+      return result;
+    } catch (error) {
+      console.error('ParagraphController: Get saved paragraphs error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to load saved paragraphs'
+      };
+    }
+  }
+
+  /**
+   * Save a paragraph
+   */
+  async saveParagraph(request: SaveParagraphRequest): Promise<SavedParagraphsResponse> {
+    try {
+      console.log('ParagraphController: Saving paragraph');
+      const result = await this.savedParagraphService.saveParagraph(request);
+      return result;
+    } catch (error) {
+      console.error('ParagraphController: Save paragraph error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to save paragraph'
+      };
+    }
+  }
+
+  /**
+   * Delete a saved paragraph
+   */
+  async deleteSavedParagraph(id: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('ParagraphController: Deleting paragraph with ID:', id);
+      const result = await this.savedParagraphService.deleteParagraph(id);
+      return result;
+    } catch (error) {
+      console.error('ParagraphController: Delete paragraph error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete paragraph'
+      };
+    }
+  }
+
+  /**
+   * Update a saved paragraph
+   */
+  async updateSavedParagraph(id: string, request: SaveParagraphRequest): Promise<SavedParagraphsResponse> {
+    try {
+      console.log('ParagraphController: Updating paragraph with ID:', id);
+      const result = await this.savedParagraphService.updateParagraph(id, request);
+      return result;
+    } catch (error) {
+      console.error('ParagraphController: Update paragraph error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update paragraph'
+      };
+    }
+  }
+
+  /**
+   * Get a specific paragraph by ID
+   */
+  async getParagraphById(id: string): Promise<SavedParagraphsResponse> {
+    try {
+      console.log('ParagraphController: Getting paragraph by ID:', id);
+      const result = await this.savedParagraphService.getParagraphById(id);
+      return result;
+    } catch (error) {
+      console.error('ParagraphController: Get paragraph by ID error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get paragraph'
+      };
+    }
+  }
+
+  /**
+   * Refresh saved paragraphs list
+   */
+  async refreshSavedParagraphs(): Promise<SavedParagraphsResponse> {
+    return this.getSavedParagraphs();
+  }
 }
+
+// Export singleton instance
+export const paragraphController = new ParagraphController();
