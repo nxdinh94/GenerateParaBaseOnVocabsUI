@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   BookOpen, 
@@ -13,6 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { LoginModal } from '@/components/LoginModal';
+import { SignUpModal } from '@/components/SignUpModal';
+import { ForgotPasswordModal } from '@/components/ForgotPasswordModal';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
@@ -32,6 +36,44 @@ export const Navigation: React.FC<NavigationProps> = ({
   isMobileMenuOpen,
   setIsMobileMenuOpen
 }) => {
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [signUpModalOpen, setSignUpModalOpen] = useState(false);
+  const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    setLoginModalOpen(true);
+  };
+
+  const handleSwitchToSignup = () => {
+    setLoginModalOpen(false);
+    setSignUpModalOpen(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setSignUpModalOpen(false);
+    setLoginModalOpen(true);
+  };
+
+  const handleForgotPassword = () => {
+    setLoginModalOpen(false);
+    setForgotPasswordModalOpen(true);
+  };
+
+  const handleBackToLogin = () => {
+    setForgotPasswordModalOpen(false);
+    setLoginModalOpen(true);
+  };
+
+  const handleTermsClick = () => {
+    setSignUpModalOpen(false);
+    navigate('/terms');
+  };
+
+  const handlePrivacyClick = () => {
+    setSignUpModalOpen(false);
+    navigate('/privacy');
+  };
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -84,7 +126,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             >
               {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleLoginClick}>
               <LogIn className="h-4 w-4 mr-2" />
               Login
             </Button>
@@ -142,7 +184,14 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <span>Dark Mode</span>
                   <Switch checked={darkMode} onCheckedChange={setDarkMode} />
                 </div>
-                <Button variant="outline" className="justify-start">
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => {
+                    handleLoginClick();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
                   <LogIn className="h-4 w-4 mr-2" />
                   Login
                 </Button>
@@ -151,6 +200,28 @@ export const Navigation: React.FC<NavigationProps> = ({
           </Sheet>
         </div>
       </div>
+
+      {/* Authentication Modals */}
+      <LoginModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onSwitchToSignup={handleSwitchToSignup}
+        onForgotPassword={handleForgotPassword}
+      />
+      
+      <SignUpModal
+        isOpen={signUpModalOpen}
+        onClose={() => setSignUpModalOpen(false)}
+        onSwitchToLogin={handleSwitchToLogin}
+        onTermsClick={handleTermsClick}
+        onPrivacyClick={handlePrivacyClick}
+      />
+      
+      <ForgotPasswordModal
+        isOpen={forgotPasswordModalOpen}
+        onClose={() => setForgotPasswordModalOpen(false)}
+        onBackToLogin={handleBackToLogin}
+      />
     </nav>
   );
 };
