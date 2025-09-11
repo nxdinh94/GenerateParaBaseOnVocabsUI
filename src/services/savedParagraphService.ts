@@ -65,37 +65,33 @@ export class SavedParagraphService {
       }
       
       const response = await apiClient.request({
-        url: '/saved-paragraphs',
+        url: '/save-paragraph',
         method: 'POST',
         data: requestData,
       });
       
-      // Handle different possible response structures
+      // Handle the actual API response structure
       const responseData = response.data as any;
       
-      if (responseData.status && responseData.data) {
-        // If response follows the list structure (with data array)
-        const apiResponse = responseData as SavedParagraphsApiResponse;
-        return {
-          success: true,
-          data: apiResponse.data,
-          total: apiResponse.total
-        };
-      } else {
-        // If response is a single saved paragraph (legacy format)
-        // Convert to group format for consistency
-        const savedParagraph = responseData as SavedParagraph;
+      if (responseData.status && responseData.saved_paragraph_id) {
+        // Convert the save response to a group format for consistency
         const groupFormat: SavedParagraphGroup = {
-          id: savedParagraph.id,
-          vocabs: savedParagraph.vocabs,
+          id: responseData.saved_paragraph_id,
+          vocabs: requestData.vocabs,
           is_group: true,
-          paragraphs: [savedParagraph.paragraph],
+          paragraphs: [requestData.paragraph],
           total_paragraphs: 1
         };
         
         return {
           success: true,
-          data: [groupFormat]
+          data: [groupFormat],
+          message: responseData.message
+        };
+      } else {
+        return {
+          success: false,
+          error: responseData.message || 'Failed to save paragraph'
         };
       }
     } catch (error) {

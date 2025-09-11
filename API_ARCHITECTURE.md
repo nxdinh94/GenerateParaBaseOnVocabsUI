@@ -220,7 +220,7 @@ const settings: ParagraphSettings = { /* ... */ };
 
 ### Saved Paragraphs
 - **List**: `GET /saved-paragraphs`
-- **Create**: `POST /saved-paragraphs`
+- **Create**: `POST /save-paragraph`
 - **Get**: `GET /saved-paragraphs/{id}`
 - **Update**: `PUT /saved-paragraphs/{id}`
 - **Delete**: `DELETE /saved-paragraphs/{id}`

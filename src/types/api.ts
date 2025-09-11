@@ -49,6 +49,7 @@ export interface SavedParagraphsResponse {
   data?: SavedParagraphGroup[];
   total?: number;
   error?: string;
+  message?: string;
 }
 
 // Legacy interface for backward compatibility

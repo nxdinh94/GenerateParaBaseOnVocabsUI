@@ -18,6 +18,8 @@ import { SettingsPanel } from './features/settings/SettingsPanel';
 import { MainWorkspace } from './features/workspace/MainWorkspace';
 import { HistoryPage } from './features/history/HistoryPage';
 import { SavedPage } from './features/saved/SavedPage';
+import { Toaster } from './components/ui/toaster';
+import { useToast } from './hooks/use-toast';
 
 // Types
 interface GeneratedParagraph {
@@ -44,6 +46,7 @@ interface ParagraphSettings {
 const VocabularyLearningWebsite: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { toast } = useToast();
   
   // Load settings from localStorage on component mount
   const [settings, setSettings] = useState<ParagraphSettings>(() => {
@@ -133,11 +136,26 @@ const VocabularyLearningWebsite: React.FC = () => {
         const errorMessage = response.error || 'Failed to generate paragraph';
         console.error('API Error:', errorMessage);
         
+        // Show error toast
+        toast({
+          variant: "destructive",
+          title: "Tạo thất bại",
+          description: errorMessage,
+        });
+        
         // Show error in the paragraph field
         setCurrentParagraph(`Error: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Network Error:', error);
+      
+      // Show error toast
+      toast({
+        variant: "destructive",
+        title: "Lỗi mạng",
+        description: error instanceof Error ? error.message : 'Không thể kết nối đến server',
+      });
+      
       setCurrentParagraph(`Network Error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`);
     } finally {
       setIsLoading(false);
@@ -200,15 +218,30 @@ const VocabularyLearningWebsite: React.FC = () => {
         setGroupedParagraphs(prev => [newGroup, ...prev]);
         console.log('✅ Paragraph saved to API:', savedGroup.id);
         
+        // Show success toast
+        toast({
+          variant: "success",
+          title: "Lưu thành công!",
+          description: "Đoạn văn đã được lưu vào danh sách yêu thích.",
+        });
+        
         // Also save to localStorage for backup (optional)
         LocalStorageService.saveParagraphToFavorites(currentParagraph, vocabularies);
       } else {
         console.error('❌ Failed to save paragraph:', response.error);
-        alert(`Failed to save paragraph: ${response.error}`);
+        toast({
+          variant: "destructive",
+          title: "Lưu thất bại",
+          description: response.error || "Không thể lưu đoạn văn.",
+        });
       }
     } catch (error) {
       console.error('❌ Error saving paragraph:', error);
-      alert(`Error saving paragraph: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        variant: "destructive",
+        title: "Lỗi mạng",
+        description: error instanceof Error ? error.message : 'Không thể kết nối đến server.',
+      });
     }
   };
 
@@ -221,13 +254,28 @@ const VocabularyLearningWebsite: React.FC = () => {
         // Remove from local state immediately
         setGroupedParagraphs(prev => prev.filter(group => group.id !== id));
         console.log('✅ Paragraph deleted from API:', id);
+        
+        // Show success toast
+        toast({
+          variant: "success",
+          title: "Xóa thành công!",
+          description: "Đoạn văn đã được xóa khỏi danh sách yêu thích.",
+        });
       } else {
         console.error('❌ Failed to delete paragraph:', response.error);
-        alert(`Failed to delete paragraph: ${response.error}`);
+        toast({
+          variant: "destructive",
+          title: "Xóa thất bại",
+          description: response.error || "Không thể xóa đoạn văn.",
+        });
       }
     } catch (error) {
       console.error('❌ Error deleting paragraph:', error);
-      alert(`Error deleting paragraph: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        variant: "destructive",
+        title: "Lỗi mạng",
+        description: error instanceof Error ? error.message : 'Không thể kết nối đến server.',
+      });
     }
   };
 
@@ -377,6 +425,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       )}
       
       <Footer />
+      <Toaster />
     </div>
   );
 };
