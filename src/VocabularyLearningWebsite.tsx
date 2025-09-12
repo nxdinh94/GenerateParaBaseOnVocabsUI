@@ -6,6 +6,7 @@ import { paragraphController } from './controllers/paragraphController';
 import { LocalStorageService, type UserSettings } from './services/localStorageService';
 import { mapApiGroupArrayToUI, mapUIToApiRequest, type GroupedParagraphs } from './lib/dataMappers';
 import { useVocabSuggestions } from './hooks/useVocabSuggestions';
+import { useAuth } from './hooks/useAuth';
 
 // Feature components
 import { Navigation } from './features/navigation/Navigation';
@@ -35,7 +36,7 @@ interface ParagraphSettings {
   language: string;
   length: 'short' | 'medium' | 'long' | 'custom';
   customLength?: number;
-  level: 'none' | 'beginner' | 'intermediate' | 'advanced';
+  level: 'beginner' | 'intermediate' | 'advanced';
   topic: string;
   customTopic?: string;
   customLanguage?: string;
@@ -54,7 +55,7 @@ const VocabularyLearningWebsite: React.FC = () => {
     return {
       language: savedSettings.language,
       length: savedSettings.length as 'short' | 'medium' | 'long' | 'custom',
-      level: savedSettings.level as 'none' | 'beginner' | 'intermediate' | 'advanced',
+      level: (savedSettings.level === 'none' ? 'beginner' : savedSettings.level) as 'beginner' | 'intermediate' | 'advanced',
       topic: savedSettings.topic,
       tone: savedSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
       customLength: savedSettings.customLength || 100
@@ -82,7 +83,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       id: item.id,
       content: item.paragraph,
       vocabularies: item.vocabularies,
-      settings: { language: 'english', length: 'short', level: 'none', topic: 'none', tone: 'none' } as ParagraphSettings,
+      settings: { language: 'english', length: 'short', level: 'beginner', topic: 'none', tone: 'none' } as ParagraphSettings,
       timestamp: new Date(item.createdAt),
       saved: false
     }));
@@ -95,6 +96,9 @@ const VocabularyLearningWebsite: React.FC = () => {
 
   // Use vocabulary suggestions hook
   const { suggestions: vocabularySuggestions } = useVocabSuggestions();
+
+  // Use authentication hook
+  const { isAuthenticated } = useAuth();
 
   // State for custom languages loaded from localStorage
   const [customLanguages, setCustomLanguages] = useState<string[]>(() => {
@@ -195,6 +199,16 @@ const VocabularyLearningWebsite: React.FC = () => {
   // Save paragraph to API
   const saveParagraph = async () => {
     if (!currentParagraph) return;
+    
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Cần đăng nhập",
+        description: "Bạn cần đăng nhập để sử dụng tính năng này",
+      });
+      return;
+    }
     
     try {
       const response = await paragraphController.saveParagraph(
@@ -342,7 +356,7 @@ const VocabularyLearningWebsite: React.FC = () => {
     setSettings({
       language: defaultSettings.language,
       length: defaultSettings.length as 'short' | 'medium' | 'long' | 'custom',
-      level: defaultSettings.level as 'none' | 'beginner' | 'intermediate' | 'advanced',
+      level: (defaultSettings.level === 'none' ? 'beginner' : defaultSettings.level) as 'beginner' | 'intermediate' | 'advanced',
       topic: defaultSettings.topic,
       tone: defaultSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
       customLength: defaultSettings.customLength

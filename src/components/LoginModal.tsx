@@ -130,6 +130,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   onChange={handleInputChange}
                   className="pl-10"
                   required
+                  autoFocus={false}
                 />
               </div>
             </div>
@@ -148,6 +149,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   onChange={handleInputChange}
                   className="pl-10 pr-10"
                   required
+                  autoFocus={false}
                 />
                 <button
                   type="button"

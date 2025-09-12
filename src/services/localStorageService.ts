@@ -50,7 +50,7 @@ export class LocalStorageService {
     return {
       language: 'English',
       length: 'short',
-      level: 'none',
+      level: 'beginner',
       topic: 'none',
       tone: 'none',
       vocabularies: [],

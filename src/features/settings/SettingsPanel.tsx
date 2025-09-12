@@ -10,7 +10,7 @@ interface ParagraphSettings {
   language: string;
   length: 'short' | 'medium' | 'long' | 'custom';
   customLength?: number;
-  level: 'none' | 'beginner' | 'intermediate' | 'advanced';
+  level: 'beginner' | 'intermediate' | 'advanced';
   topic: string;
   customTopic?: string;
   customLanguage?: string;
@@ -64,7 +64,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   ];
 
   const levels = [
-    { value: 'none', label: 'None' },
     { value: 'beginner', label: 'Beginner' },
     { value: 'intermediate', label: 'Intermediate' },
     { value: 'advanced', label: 'Advanced' }
