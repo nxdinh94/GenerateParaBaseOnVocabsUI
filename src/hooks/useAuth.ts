@@ -64,6 +64,8 @@ export const useAuth = () => {
       user: null,
       isLoading: false,
     });
+    // Redirect to home page and refresh to clear all data in one step
+    window.location.href = '/';
   };
 
   const refreshAuth = () => {

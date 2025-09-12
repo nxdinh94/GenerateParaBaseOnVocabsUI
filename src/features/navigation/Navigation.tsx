@@ -84,6 +84,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   const handleLogout = () => {
     logout();
+    // Note: Page will be refreshed by logout function, but set home as fallback
+    setCurrentPage('home');
   };
 
   return (
