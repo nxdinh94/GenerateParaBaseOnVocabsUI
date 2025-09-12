@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import VocabularyLearningWebsite from './VocabularyLearningWebsite';
 import { LoginPage, SignUpPage, ForgotPasswordPage, TermsPage, PrivacyPage } from './features/auth';
+import { HistoryPageWrapper } from './features/history';
+import { SavedPageWrapper } from './features/saved';
 import './App.css';
 
 const App: React.FC = () => {
@@ -19,6 +21,10 @@ const App: React.FC = () => {
         {/* Legal Pages */}
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        
+        {/* User Feature Pages */}
+        <Route path="/history" element={<HistoryPageWrapper />} />
+        <Route path="/saved" element={<SavedPageWrapper />} />
         
         {/* Catch all route - redirect to home */}
         <Route path="*" element={<VocabularyLearningWebsite />} />

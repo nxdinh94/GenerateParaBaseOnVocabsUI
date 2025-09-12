@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { paragraphController } from './controllers/paragraphController';
 import { LocalStorageService, type UserSettings } from './services/localStorageService';
-import { mapApiGroupArrayToUI, mapUIToApiRequest, type GroupedParagraphs } from './lib/dataMappers';
+import { mapUIToApiRequest } from './lib/dataMappers';
 import { useVocabSuggestions } from './hooks/useVocabSuggestions';
 import { useAuth } from './hooks/useAuth';
 
@@ -17,8 +17,6 @@ import { ContactSection } from './features/landing/ContactSection';
 import { Footer } from './features/layout/Footer';
 import { SettingsPanel } from './features/settings/SettingsPanel';
 import { MainWorkspace } from './features/workspace/MainWorkspace';
-import { HistoryPage } from './features/history/HistoryPage';
-import { SavedPage } from './features/saved/SavedPage';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 
@@ -74,7 +72,6 @@ const VocabularyLearningWebsite: React.FC = () => {
   // Other state variables
   const [currentParagraph, setCurrentParagraph] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'home' | 'history' | 'saved'>('home');
   
   // Load saved data from localStorage for history, but saved paragraphs will come from API
   const [history, setHistory] = useState<GeneratedParagraph[]>(() => {
@@ -89,10 +86,10 @@ const VocabularyLearningWebsite: React.FC = () => {
     }));
   });
 
-  // Saved paragraphs now come from API (grouped format)
-  const [groupedParagraphs, setGroupedParagraphs] = useState<GroupedParagraphs[]>([]);
-  const [isLoadingSavedParagraphs, setIsLoadingSavedParagraphs] = useState(false);
-  const [savedParagraphsError, setSavedParagraphsError] = useState<string | null>(null);
+  // Saved paragraphs now come from API (grouped format) - moved to SavedPageWrapper
+  // const [groupedParagraphs, setGroupedParagraphs] = useState<GroupedParagraphs[]>([]);
+  // const [isLoadingSavedParagraphs, setIsLoadingSavedParagraphs] = useState(false);
+  // const [savedParagraphsError, setSavedParagraphsError] = useState<string | null>(null);
 
   // Use vocabulary suggestions hook
   const { suggestions: vocabularySuggestions } = useVocabSuggestions();
@@ -166,35 +163,8 @@ const VocabularyLearningWebsite: React.FC = () => {
     }
   }, [vocabularies, settings]);
 
-  // Load saved paragraphs from API
-  const loadSavedParagraphs = async () => {
-    setIsLoadingSavedParagraphs(true);
-    setSavedParagraphsError(null);
-    
-    try {
-      const response = await paragraphController.getSavedParagraphs();
-      
-      if (response.success && response.data) {
-        // Convert API grouped paragraphs to UI format
-        const convertedGroups = mapApiGroupArrayToUI(response.data);
-        setGroupedParagraphs(convertedGroups);
-        
-        console.log('✅ Saved paragraphs loaded from API:', {
-          groups: convertedGroups.length,
-          totalParagraphs: response.data.reduce((sum, group) => sum + group.total_paragraphs, 0)
-        });
-      } else {
-        setSavedParagraphsError(response.error || 'Failed to load saved paragraphs');
-        console.error('❌ Failed to load saved paragraphs:', response.error);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Network error';
-      setSavedParagraphsError(errorMessage);
-      console.error('❌ Error loading saved paragraphs:', error);
-    } finally {
-      setIsLoadingSavedParagraphs(false);
-    }
-  };
+  // Load saved paragraphs from API - moved to SavedPageWrapper
+  // const loadSavedParagraphs = async () => { ... }
 
   // Save paragraph to API
   const saveParagraph = async () => {
@@ -220,16 +190,7 @@ const VocabularyLearningWebsite: React.FC = () => {
         const savedGroup = response.data[0];
         
         // Add to grouped paragraphs
-        const newGroup: GroupedParagraphs = {
-          id: savedGroup.id,
-          vocabularies: savedGroup.vocabs,
-          paragraphs: savedGroup.paragraphs,
-          totalParagraphs: savedGroup.total_paragraphs,
-          isGroup: savedGroup.is_group,
-          timestamp: new Date(),
-          saved: true
-        };
-        setGroupedParagraphs(prev => [newGroup, ...prev]);
+        // Note: UI update will be handled by SavedPageWrapper when user navigates to saved page
         console.log('✅ Paragraph saved to API:', savedGroup.id);
         
         // Show success toast
@@ -259,39 +220,8 @@ const VocabularyLearningWebsite: React.FC = () => {
     }
   };
 
-  // Delete saved paragraph from API
-  const deleteSavedParagraph = async (id: string) => {
-    try {
-      const response = await paragraphController.deleteSavedParagraph(id);
-      
-      if (response.success) {
-        // Remove from local state immediately
-        setGroupedParagraphs(prev => prev.filter(group => group.id !== id));
-        console.log('✅ Paragraph deleted from API:', id);
-        
-        // Show success toast
-        toast({
-          variant: "success",
-          title: "Xóa thành công!",
-          description: "Đoạn văn đã được xóa khỏi danh sách yêu thích.",
-        });
-      } else {
-        console.error('❌ Failed to delete paragraph:', response.error);
-        toast({
-          variant: "destructive",
-          title: "Xóa thất bại",
-          description: response.error || "Không thể xóa đoạn văn.",
-        });
-      }
-    } catch (error) {
-      console.error('❌ Error deleting paragraph:', error);
-      toast({
-        variant: "destructive",
-        title: "Lỗi mạng",
-        description: error instanceof Error ? error.message : 'Không thể kết nối đến server.',
-      });
-    }
-  };
+  // Delete saved paragraph from API - moved to SavedPageWrapper  
+  // const deleteSavedParagraph = async (id: string) => { ... }
 
   const getRandomFromHistory = () => {
     if (history.length === 0) return;
@@ -343,13 +273,6 @@ const VocabularyLearningWebsite: React.FC = () => {
     }
   }, [currentParagraph, vocabularies]);
 
-  // Load saved paragraphs when "Saved" tab is selected
-  useEffect(() => {
-    if (currentPage === 'saved') {
-      loadSavedParagraphs();
-    }
-  }, [currentPage]);
-
   // localStorage management functions
   const resetSettings = () => {
     const defaultSettings = LocalStorageService.getDefaultSettings();
@@ -373,70 +296,46 @@ const VocabularyLearningWebsite: React.FC = () => {
       <Navigation
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
       
-      {currentPage === 'home' && (
-        <>
-          <HeroSection />
-          
-          <div className="container mx-auto px-4 py-12">
-            <div className="grid lg:grid-cols-4 gap-8">
-              <div className="lg:col-span-3">
-                <MainWorkspace
-                  vocabularies={vocabularies}
-                  setVocabularies={setVocabularies}
-                  vocabularySuggestions={vocabularySuggestions}
-                  generateParagraph={generateParagraph}
-                  isLoading={isLoading}
-                  getRandomFromHistory={getRandomFromHistory}
-                  historyLength={history.length}
-                  currentParagraph={currentParagraph}
-                  saveParagraph={saveParagraph}
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <SettingsPanel
-                  settings={settings}
-                  setSettings={setSettings}
-                  savedCustomLength={savedCustomLength}
-                  setSavedCustomLength={setSavedCustomLength}
-                  customTopics={customTopics}
-                  setCustomTopics={setCustomTopics}
-                  customLanguages={customLanguages}
-                  setCustomLanguages={setCustomLanguages}
-                  resetSettings={resetSettings}
-                />
-              </div>
-            </div>
+      <HeroSection />
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            <MainWorkspace
+              vocabularies={vocabularies}
+              setVocabularies={setVocabularies}
+              vocabularySuggestions={vocabularySuggestions}
+              generateParagraph={generateParagraph}
+              isLoading={isLoading}
+              getRandomFromHistory={getRandomFromHistory}
+              historyLength={history.length}
+              currentParagraph={currentParagraph}
+              saveParagraph={saveParagraph}
+            />
           </div>
-          
-          <FeaturesSection />
-          <FAQSection />
-          <ContactSection />
-        </>
-      )}
-      
-      {currentPage === 'history' && (
-        <div className="container mx-auto px-4 py-12">
-          <HistoryPage history={history} />
+          <div className="lg:col-span-1">
+            <SettingsPanel
+              settings={settings}
+              setSettings={setSettings}
+              savedCustomLength={savedCustomLength}
+              setSavedCustomLength={setSavedCustomLength}
+              customTopics={customTopics}
+              setCustomTopics={setCustomTopics}
+              customLanguages={customLanguages}
+              setCustomLanguages={setCustomLanguages}
+              resetSettings={resetSettings}
+            />
+          </div>
         </div>
-      )}
+      </div>
       
-      {currentPage === 'saved' && (
-        <div className="container mx-auto px-4 py-12">
-          <SavedPage
-            groupedParagraphs={groupedParagraphs}
-            isLoadingSavedParagraphs={isLoadingSavedParagraphs}
-            savedParagraphsError={savedParagraphsError}
-            loadSavedParagraphs={loadSavedParagraphs}
-            deleteSavedParagraph={deleteSavedParagraph}
-          />
-        </div>
-      )}
+      <FeaturesSection />
+      <FAQSection />
+      <ContactSection />
       
       <Footer />
       <Toaster />

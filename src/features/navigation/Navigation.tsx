@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   BookOpen, 
-  History, 
-  Save, 
   Moon, 
   Sun, 
   LogIn,
@@ -19,13 +17,10 @@ import { SignUpModal } from '@/components/SignUpModal';
 import { ForgotPasswordModal } from '@/components/ForgotPasswordModal';
 import { UserDropdown } from '@/components/UserDropdown';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
 
 interface NavigationProps {
   darkMode: boolean;
   setDarkMode: (value: boolean) => void;
-  currentPage: 'home' | 'history' | 'saved';
-  setCurrentPage: (page: 'home' | 'history' | 'saved') => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (value: boolean) => void;
 }
@@ -33,8 +28,6 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({
   darkMode,
   setDarkMode,
-  currentPage,
-  setCurrentPage,
   isMobileMenuOpen,
   setIsMobileMenuOpen
 }) => {
@@ -84,8 +77,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   const handleLogout = () => {
     logout();
-    // Note: Page will be refreshed by logout function, but set home as fallback
-    setCurrentPage('home');
+    // Note: Page will be refreshed by logout function, but navigate to home as fallback
+    navigate('/');
   };
 
   return (
@@ -101,33 +94,10 @@ export const Navigation: React.FC<NavigationProps> = ({
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <button
-              onClick={() => setCurrentPage('home')}
-              className={cn(
-                "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                currentPage === 'home' ? "bg-primary text-primary-foreground" : "hover:bg-accent"
-              )}
+              onClick={() => navigate('/')}
+              className="px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
             >
               Home
-            </button>
-            <button
-              onClick={() => setCurrentPage('history')}
-              className={cn(
-                "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                currentPage === 'history' ? "bg-primary text-primary-foreground" : "hover:bg-accent"
-              )}
-            >
-              <History className="h-4 w-4 mr-2 inline" />
-              History
-            </button>
-            <button
-              onClick={() => setCurrentPage('saved')}
-              className={cn(
-                "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                currentPage === 'saved' ? "bg-primary text-primary-foreground" : "hover:bg-accent"
-              )}
-            >
-              <Save className="h-4 w-4 mr-2 inline" />
-              Saved
             </button>
           </div>
 
@@ -164,36 +134,14 @@ export const Navigation: React.FC<NavigationProps> = ({
               </SheetHeader>
               <div className="flex flex-col space-y-4 mt-6">
                 <Button
-                  variant={currentPage === 'home' ? 'default' : 'ghost'}
+                  variant="ghost"
                   onClick={() => {
-                    setCurrentPage('home');
+                    navigate('/');
                     setIsMobileMenuOpen(false);
                   }}
                   className="justify-start"
                 >
                   Home
-                </Button>
-                <Button
-                  variant={currentPage === 'history' ? 'default' : 'ghost'}
-                  onClick={() => {
-                    setCurrentPage('history');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="justify-start"
-                >
-                  <History className="h-4 w-4 mr-2" />
-                  History
-                </Button>
-                <Button
-                  variant={currentPage === 'saved' ? 'default' : 'ghost'}
-                  onClick={() => {
-                    setCurrentPage('saved');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="justify-start"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Saved
                 </Button>
                 <Separator />
                 <div className="flex items-center justify-between">

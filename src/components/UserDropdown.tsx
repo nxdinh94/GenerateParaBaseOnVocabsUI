@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, History, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserDropdownProps {
   user: {
@@ -13,6 +14,7 @@ interface UserDropdownProps {
 export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -91,6 +93,30 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
             >
               <User className="w-4 h-4 mr-3" />
               Hồ sơ cá nhân
+            </button>
+
+            {/* History Option */}
+            <button
+              className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/history');
+              }}
+            >
+              <History className="w-4 h-4 mr-3" />
+              Lịch sử
+            </button>
+
+            {/* Saved Option */}
+            <button
+              className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/saved');
+              }}
+            >
+              <Save className="w-4 h-4 mr-3" />
+              Đã lưu
             </button>
             
             {/* Logout Option */}
