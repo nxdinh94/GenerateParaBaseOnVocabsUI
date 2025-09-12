@@ -80,8 +80,32 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <Card className="p-6 space-y-6">
-      <h3 className="text-lg font-semibold">Settings</h3>
       
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Settings</h3>
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={resetSettings}
+            className="text-xs p-2"
+            title="Reset to Defaults"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+          </Button>
+      </div>
       <div className="space-y-4">
         <div>
           <Label htmlFor="language">Language</Label>
@@ -254,25 +278,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             ))}
           </select>
         </div>
-      </div>
-      
-      {/* Settings Management */}
-      <Separator />
-      <div className="pt-4">
-        <h3 className="text-sm font-medium mb-3 text-muted-foreground">Settings Management</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetSettings}
-            className="text-xs"
-          >
-            Reset to Defaults
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Your settings are automatically saved locally. Click reset to restore default values.
-        </p>
       </div>
     </Card>
   );
