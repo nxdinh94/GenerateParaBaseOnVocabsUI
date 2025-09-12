@@ -21,6 +21,7 @@ interface LoginModalProps {
   onClose: () => void;
   onSwitchToSignup: () => void;
   onForgotPassword: () => void;
+  onLoginSuccess?: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
@@ -28,6 +29,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSwitchToSignup,
   onForgotPassword,
+  onLoginSuccess,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +77,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           title: "Đăng nhập thành công",
           description: `Chào mừng ${userName}!`,
         });
+        
+        // Call success callback to refresh auth state
+        onLoginSuccess?.();
         
         onClose();
       } catch (error) {

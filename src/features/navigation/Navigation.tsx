@@ -7,8 +7,8 @@ import {
   Save, 
   Moon, 
   Sun, 
-  LogIn, 
-  User 
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -17,6 +17,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { LoginModal } from '@/components/LoginModal';
 import { SignUpModal } from '@/components/SignUpModal';
 import { ForgotPasswordModal } from '@/components/ForgotPasswordModal';
+import { UserDropdown } from '@/components/UserDropdown';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 interface NavigationProps {
@@ -40,6 +42,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [signUpModalOpen, setSignUpModalOpen] = useState(false);
   const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout, refreshAuth } = useAuth();
 
   const handleLoginClick = () => {
     setLoginModalOpen(true);
@@ -74,6 +77,15 @@ export const Navigation: React.FC<NavigationProps> = ({
     setSignUpModalOpen(false);
     navigate('/privacy');
   };
+
+  const handleLoginSuccess = () => {
+    refreshAuth();
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -126,13 +138,15 @@ export const Navigation: React.FC<NavigationProps> = ({
             >
               {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleLoginClick}>
-              <LogIn className="h-4 w-4 mr-2" />
-              Login
-            </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-4 w-4" />
-            </Button>
+            
+            {isAuthenticated && user ? (
+              <UserDropdown user={user} onLogout={handleLogout} />
+            ) : (
+              <Button variant="ghost" size="sm" onClick={handleLoginClick}>
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -184,17 +198,52 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <span>Dark Mode</span>
                   <Switch checked={darkMode} onCheckedChange={setDarkMode} />
                 </div>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => {
-                    handleLoginClick();
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
+                
+                {isAuthenticated && user ? (
+                  <>
+                    <Separator />
+                    <div className="flex items-center space-x-3 px-3 py-2">
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                          {user.name?.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase() || 'U'}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start text-red-600"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Đăng xuất
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    className="justify-start"
+                    onClick={() => {
+                      handleLoginClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -207,6 +256,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         onClose={() => setLoginModalOpen(false)}
         onSwitchToSignup={handleSwitchToSignup}
         onForgotPassword={handleForgotPassword}
+        onLoginSuccess={handleLoginSuccess}
       />
       
       <SignUpModal
