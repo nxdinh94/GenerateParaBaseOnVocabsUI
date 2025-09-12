@@ -15,6 +15,12 @@ export const apiClient = axios.create({
 // Request interceptor for logging
 apiClient.interceptors.request.use(
   (config) => {
+    // Add authorization header if JWT token exists
+    const jwtToken = sessionStorage.getItem('jwt_token');
+    if (jwtToken && config.headers) {
+      config.headers.Authorization = `Bearer ${jwtToken}`;
+    }
+    
     console.log('🚀 Making API request to:', `${config.baseURL}${config.url}`);
     console.log('📤 Request config:', {
       method: config.method?.toUpperCase(),
