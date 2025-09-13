@@ -15,6 +15,7 @@ interface ParagraphSettings {
   customTopic?: string;
   customLanguage?: string;
   tone: 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic';
+  prompt?: string;
 }
 
 interface SettingsPanelProps {

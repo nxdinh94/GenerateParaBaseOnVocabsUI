@@ -3,6 +3,7 @@ import { Shuffle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TagInput } from '@/features/vocabulary/TagInput';
+import { InstructionInput } from '@/features/vocabulary/InstructionInput';
 import { ParagraphDisplay } from '@/features/paragraph/ParagraphDisplay';
 
 interface MainWorkspaceProps {
@@ -16,6 +17,8 @@ interface MainWorkspaceProps {
   currentParagraph: string;
   saveParagraph: () => void;
   onEditSave?: (editedContent: string) => void;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -28,7 +31,9 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   historyLength,
   currentParagraph,
   saveParagraph,
-  onEditSave
+  onEditSave,
+  prompt,
+  setPrompt
 }) => {
   return (
     <div className="space-y-6">
@@ -43,6 +48,19 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         />
         <p className="text-sm text-muted-foreground mt-2">
           Press Ctrl+Enter to generate paragraph
+        </p>
+      </Card>
+
+      {/* User Instructions */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Your instruction</h2>
+        <InstructionInput
+          value={prompt}
+          onChange={setPrompt}
+          placeholder="Example: This vocabs means..."
+        />
+        <p className="text-sm text-muted-foreground mt-2">
+          Provide additional instructions for paragraph generation
         </p>
       </Card>
 

@@ -9,6 +9,7 @@ export interface UserSettings {
   customLength?: number; // Add custom length value
   customTopics?: string[]; // Add custom topics array
   customLanguages?: string[]; // Add custom languages array
+  prompt?: string; // Add prompt property for user instructions
 }
 
 const STORAGE_KEYS = {
@@ -56,7 +57,8 @@ export class LocalStorageService {
       vocabularies: [],
       customLength: 100, // Default custom length
       customTopics: [], // Default empty custom topics
-      customLanguages: [] // Default empty custom languages
+      customLanguages: [], // Default empty custom languages
+      prompt: '' // Default empty prompt
     };
   }
 

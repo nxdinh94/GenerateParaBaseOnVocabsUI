@@ -6,6 +6,7 @@ export interface GenerateParagraphRequest {
   level: string;
   topic: string;
   tone: string;
+  prompt?: string;
 }
 
 // API response from server
@@ -69,6 +70,7 @@ export interface ParagraphSettings {
   topic: string;
   customTopic?: string;
   tone: 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic';
+  prompt?: string;
 }
 
 // API Client types

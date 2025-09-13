@@ -35,6 +35,7 @@ interface ParagraphSettings {
   customTopic?: string;
   customLanguage?: string;
   tone: 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic';
+  prompt?: string;
 }
 
 // Main Component
@@ -44,14 +45,18 @@ const VocabularyLearningWebsite: React.FC = () => {
   // Load settings from localStorage on component mount
   const [settings, setSettings] = useState<ParagraphSettings>(() => {
     const savedSettings = LocalStorageService.getUserSettingsOrDefaults();
-    return {
+    console.log('🔧 Loading settings from localStorage:', savedSettings);
+    const initialSettings = {
       language: savedSettings.language,
       length: savedSettings.length as 'short' | 'medium' | 'long' | 'custom',
       level: (savedSettings.level === 'none' ? 'beginner' : savedSettings.level) as 'beginner' | 'intermediate' | 'advanced',
       topic: savedSettings.topic,
       tone: savedSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
-      customLength: savedSettings.customLength || 100
+      customLength: savedSettings.customLength || 100,
+      prompt: savedSettings.prompt || ''
     };
+    console.log('🔧 Initial settings state:', initialSettings);
+    return initialSettings;
   });
 
   // Initialize vocabularies as empty array (not persisted to localStorage)
@@ -109,7 +114,10 @@ const VocabularyLearningWebsite: React.FC = () => {
     try {
       // Call the API through the controller
       const response = await paragraphController.generateParagraph(vocabularies, settings);
-      
+      // log settings
+      console.log('API Request:', { vocabularies, settings });
+      console.log('Settings prompt value:', settings.prompt);
+      console.log('Settings object keys:', Object.keys(settings));
       console.log('API Response:', response);
 
       if (response.success && response.data) {
@@ -247,7 +255,8 @@ const VocabularyLearningWebsite: React.FC = () => {
       vocabularies: [], // Always empty - vocabularies not persisted
       customLength: settings.customLength,
       customTopics: customTopics,
-      customLanguages: customLanguages
+      customLanguages: customLanguages,
+      prompt: settings.prompt || ''
     };
     LocalStorageService.saveUserSettings(userSettings);
   }, [settings, customTopics, customLanguages]); // Remove vocabularies from dependency array
@@ -268,7 +277,8 @@ const VocabularyLearningWebsite: React.FC = () => {
       level: (defaultSettings.level === 'none' ? 'beginner' : defaultSettings.level) as 'beginner' | 'intermediate' | 'advanced',
       topic: defaultSettings.topic,
       tone: defaultSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
-      customLength: defaultSettings.customLength
+      customLength: defaultSettings.customLength,
+      prompt: defaultSettings.prompt || ''
     });
     setVocabularies([]); // Reset to empty array instead of loading from localStorage
     setSavedCustomLength(defaultSettings.customLength || 100);
@@ -300,6 +310,15 @@ const VocabularyLearningWebsite: React.FC = () => {
               currentParagraph={currentParagraph}
               saveParagraph={saveParagraph}
               onEditSave={handleEditSave}
+              prompt={settings.prompt || ''}
+              setPrompt={(prompt: string) => {
+                console.log('📝 Setting prompt to:', prompt);
+                setSettings(prev => {
+                  const newSettings = { ...prev, prompt };
+                  console.log('📝 New settings after prompt update:', newSettings);
+                  return newSettings;
+                });
+              }}
             />
           </div>
           <div className="lg:col-span-1">

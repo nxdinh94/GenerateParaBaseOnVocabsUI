@@ -60,7 +60,8 @@ export class ParagraphController {
         length: paragraphLength,
         level: settings.level,
         topic: settings.topic === 'custom' ? (settings.customTopic || 'custom') : settings.topic,
-        tone: settings.tone
+        tone: settings.tone,
+        prompt: settings.prompt || undefined // Include prompt if provided
       };
 
       // Log the request data for debugging
