@@ -1,6 +1,7 @@
 // Paragraph Controller - handles UI logic and coordinates with services
 import { ParagraphService } from '../services/paragraphService';
 import { SavedParagraphService } from '../services/savedParagraphService';
+import { inputHistoryService } from '../services/inputHistoryService';
 import type { 
   GenerateParagraphRequest, 
   GenerateParagraphResponse,
@@ -77,6 +78,18 @@ export class ParagraphController {
 
       // Call the paragraph service
       const result = await this.paragraphService.generateParagraph(requestData);
+      
+      // If paragraph generation was successful and user is authenticated, save input history
+      if (result.success) {
+        try {
+          console.log('ParagraphController: Paragraph generated successfully, saving input history');
+          await inputHistoryService.saveInputHistory(vocabularies);
+        } catch (inputHistoryError) {
+          // Don't fail the main operation if input history fails
+          console.warn('ParagraphController: Failed to save input history, but paragraph generation succeeded:', inputHistoryError);
+        }
+      }
+      
       return result;
     } catch (error) {
       console.error('ParagraphController: Generate paragraph error:', error);

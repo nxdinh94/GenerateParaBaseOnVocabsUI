@@ -108,3 +108,19 @@ export interface VocabSuggestionsResponse {
   };
   error?: string;
 }
+
+// Input History interfaces
+export interface InputHistoryRequest {
+  words: string[];
+}
+
+export interface InputHistoryApiResponse {
+  status: boolean;
+  message?: string;
+}
+
+export interface InputHistoryResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
