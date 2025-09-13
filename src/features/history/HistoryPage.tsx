@@ -32,8 +32,9 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ history }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">History</h2>
+    <div className="container mx-auto px-4 py-12">
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">History</h2>
       {history.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No history yet. Generate some paragraphs to see them here.</p>
@@ -73,6 +74,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ history }) => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { cn } from '@/lib/utils';
 import { paragraphController } from './controllers/paragraphController';
 import { LocalStorageService, type UserSettings } from './services/localStorageService';
 import { mapUIToApiRequest } from './lib/dataMappers';
@@ -9,15 +8,12 @@ import { useVocabSuggestions } from './hooks/useVocabSuggestions';
 import { useAuth } from './hooks/useAuth';
 
 // Feature components
-import { Navigation } from './features/navigation/Navigation';
 import { HeroSection } from './features/landing/HeroSection';
 import { FeaturesSection } from './features/landing/FeaturesSection';
 import { FAQSection } from './features/landing/FAQSection';
 import { ContactSection } from './features/landing/ContactSection';
-import { Footer } from './features/layout/Footer';
 import { SettingsPanel } from './features/settings/SettingsPanel';
 import { MainWorkspace } from './features/workspace/MainWorkspace';
-import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 
 // Types
@@ -43,8 +39,6 @@ interface ParagraphSettings {
 
 // Main Component
 const VocabularyLearningWebsite: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   
   // Load settings from localStorage on component mount
@@ -242,14 +236,6 @@ const VocabularyLearningWebsite: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
   // Save settings to localStorage when they change (excluding vocabularies)
   useEffect(() => {
     const userSettings: UserSettings = {
@@ -292,14 +278,7 @@ const VocabularyLearningWebsite: React.FC = () => {
   };
 
   return (
-    <div className={cn("min-h-screen bg-background", darkMode && "dark")}>
-      <Navigation
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-      />
-      
+    <>
       <HeroSection />
       
       <div className="container mx-auto px-4 py-12">
@@ -336,10 +315,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       <FeaturesSection />
       <FAQSection />
       <ContactSection />
-      
-      <Footer />
-      <Toaster />
-    </div>
+    </>
   );
 };
 

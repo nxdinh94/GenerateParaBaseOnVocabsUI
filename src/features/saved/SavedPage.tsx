@@ -39,8 +39,9 @@ export const SavedPage: React.FC<SavedPageProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-12">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Saved Paragraphs</h2>
         <Button
           variant="outline"
@@ -154,6 +155,7 @@ export const SavedPage: React.FC<SavedPageProps> = ({
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -61,14 +61,12 @@ export const SavedPageWrapper: React.FC = () => {
   }, [loadSavedParagraphs]);
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <SavedPage
-        groupedParagraphs={groupedParagraphs}
-        isLoadingSavedParagraphs={isLoadingSavedParagraphs}
-        savedParagraphsError={savedParagraphsError}
-        loadSavedParagraphs={loadSavedParagraphs}
-        deleteSavedParagraph={deleteSavedParagraph}
-      />
-    </div>
+    <SavedPage
+      groupedParagraphs={groupedParagraphs}
+      isLoadingSavedParagraphs={isLoadingSavedParagraphs}
+      savedParagraphsError={savedParagraphsError}
+      loadSavedParagraphs={loadSavedParagraphs}
+      deleteSavedParagraph={deleteSavedParagraph}
+    />
   );
 };

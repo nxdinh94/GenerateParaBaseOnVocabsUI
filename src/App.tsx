@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Layout } from './components/Layout';
 import VocabularyLearningWebsite from './VocabularyLearningWebsite';
 import { LoginPage, SignUpPage, ForgotPasswordPage, TermsPage, PrivacyPage } from './features/auth';
 import { HistoryPageWrapper } from './features/history';
@@ -10,24 +11,24 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Main App Route - Default Homepage */}
-        <Route path="/" element={<VocabularyLearningWebsite />} />
+        {/* Main App Route - Default Homepage with Layout */}
+        <Route path="/" element={<Layout><VocabularyLearningWebsite /></Layout>} />
         
-        {/* Authentication Routes */}
+        {/* Authentication Routes - No Layout */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         
-        {/* Legal Pages */}
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
+        {/* Legal Pages with Layout */}
+        <Route path="/terms" element={<Layout><TermsPage /></Layout>} />
+        <Route path="/privacy" element={<Layout><PrivacyPage /></Layout>} />
         
-        {/* User Feature Pages */}
-        <Route path="/history" element={<HistoryPageWrapper />} />
-        <Route path="/saved" element={<SavedPageWrapper />} />
+        {/* User Feature Pages with Layout */}
+        <Route path="/history" element={<Layout><HistoryPageWrapper /></Layout>} />
+        <Route path="/saved" element={<Layout><SavedPageWrapper /></Layout>} />
         
-        {/* Catch all route - redirect to home */}
-        <Route path="*" element={<VocabularyLearningWebsite />} />
+        {/* Catch all route - redirect to home with Layout */}
+        <Route path="*" element={<Layout><VocabularyLearningWebsite /></Layout>} />
       </Routes>
     </Router>
   );
