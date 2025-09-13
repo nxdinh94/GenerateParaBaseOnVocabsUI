@@ -310,15 +310,6 @@ const VocabularyLearningWebsite: React.FC = () => {
               currentParagraph={currentParagraph}
               saveParagraph={saveParagraph}
               onEditSave={handleEditSave}
-              prompt={settings.prompt || ''}
-              setPrompt={(prompt: string) => {
-                console.log('📝 Setting prompt to:', prompt);
-                setSettings(prev => {
-                  const newSettings = { ...prev, prompt };
-                  console.log('📝 New settings after prompt update:', newSettings);
-                  return newSettings;
-                });
-              }}
             />
           </div>
           <div className="lg:col-span-1">
@@ -332,6 +323,15 @@ const VocabularyLearningWebsite: React.FC = () => {
               customLanguages={customLanguages}
               setCustomLanguages={setCustomLanguages}
               resetSettings={resetSettings}
+              prompt={settings.prompt || ''}
+              setPrompt={(prompt: string) => {
+                console.log('📝 Setting prompt to:', prompt);
+                setSettings(prev => {
+                  const newSettings = { ...prev, prompt };
+                  console.log('📝 New settings after prompt update:', newSettings);
+                  return newSettings;
+                });
+              }}
             />
           </div>
         </div>

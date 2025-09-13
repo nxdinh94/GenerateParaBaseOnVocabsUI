@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { InstructionInput } from '@/features/vocabulary/InstructionInput';
 import { LocalStorageService } from '@/services/localStorageService';
 
 interface ParagraphSettings {
@@ -28,6 +29,8 @@ interface SettingsPanelProps {
   customLanguages: string[];
   setCustomLanguages: React.Dispatch<React.SetStateAction<string[]>>;
   resetSettings: () => void;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -39,7 +42,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   setCustomTopics,
   customLanguages,
   setCustomLanguages,
-  resetSettings
+  resetSettings,
+  prompt,
+  setPrompt
 }) => {
   // Dynamic languages list including default + custom languages
   const languages = [
@@ -200,6 +205,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           )}
         </div>
 
+        <div>
+          <Label htmlFor="instruction">Your Instruction</Label>
+          <div className="mt-2">
+            <InstructionInput
+              value={prompt}
+              onChange={setPrompt}
+              placeholder="Example: This vocabs means..."
+            />
+            <p className="text-sm text-muted-foreground mt-2">
+              Provide additional instructions for paragraph generation
+            </p>
+          </div>
+        </div>
         <div>
           <Label htmlFor="level">Level</Label>
           <select

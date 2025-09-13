@@ -1,7 +1,5 @@
 // Test service to verify JWT token authentication
 import { apiClient } from './apiClient';
-import { SavedParagraphService } from './savedParagraphService';
-import { UserApiService } from './userApiService';
 
 export interface AuthTestResponse {
   success: boolean;
