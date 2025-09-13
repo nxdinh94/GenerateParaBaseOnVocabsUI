@@ -86,20 +86,13 @@ export const Navigation: React.FC<NavigationProps> = ({
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+          >
             <BookOpen className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold">VocabLearn</span>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <button
-              onClick={() => navigate('/')}
-              className="px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent"
-            >
-              Home
-            </button>
-          </div>
+          </button>
 
           {/* Right side */}
           <div className="hidden md:flex items-center space-x-4">
@@ -133,17 +126,6 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col space-y-4 mt-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    navigate('/');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="justify-start"
-                >
-                  Home
-                </Button>
-                <Separator />
                 <div className="flex items-center justify-between">
                   <span>Dark Mode</span>
                   <Switch checked={darkMode} onCheckedChange={setDarkMode} />

@@ -47,11 +47,11 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-row gap-3">
         <Button
           onClick={generateParagraph}
           disabled={vocabularies.length === 0 || isLoading}
-          className="flex-1 sm:flex-none"
+          className="flex-1"
         >
           {isLoading ? 'Generating...' : 'Generate Paragraph'}
         </Button>
@@ -59,6 +59,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
           variant="outline"
           onClick={getRandomFromHistory}
           disabled={historyLength === 0}
+          className="flex-1"
         >
           <Shuffle className="h-4 w-4 mr-2" />
           Random from History

@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { InstructionInput } from '@/features/vocabulary/InstructionInput';
 import { LocalStorageService } from '@/services/localStorageService';
 
