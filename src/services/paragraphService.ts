@@ -52,13 +52,29 @@ export class ParagraphService {
    */
   private mapApiResponse(apiResponse: ApiParagraphResponse, vocabularies: string[]): GenerateParagraphResponse {
     if (apiResponse.status && apiResponse.result) {
-      // Use the new token-based highlighting approach
-      const highlightedParagraph = highlightVocabularies(apiResponse.result, vocabularies);
+      console.log('🔍 ParagraphService: Raw API result:', apiResponse.result);
+      
+      // Check if the API result already contains highlighting markers (** or ***)
+      const hasExistingHighlighting = /\*{2,3}.*?\*{2,3}/.test(apiResponse.result);
+      
+      let finalParagraph: string;
+      
+      if (hasExistingHighlighting) {
+        // API already provided highlighting, use it as-is
+        console.log('✨ ParagraphService: API provided highlighting detected, preserving it');
+        finalParagraph = apiResponse.result;
+      } else {
+        // No highlighting from API, apply our own highlighting
+        console.log('🎯 ParagraphService: No API highlighting detected, applying vocabulary highlighting');
+        finalParagraph = highlightVocabularies(apiResponse.result, vocabularies);
+      }
+      
+      console.log('📄 ParagraphService: Final paragraph:', finalParagraph);
       
       return {
         success: true,
         data: {
-          paragraph: highlightedParagraph,
+          paragraph: finalParagraph,
           message: 'Paragraph generated successfully'
         }
       };

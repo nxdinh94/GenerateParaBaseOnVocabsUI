@@ -5,24 +5,26 @@ import React from 'react';
 export const formatTextWithHighlights = (text: string): React.ReactNode[] => {
   if (!text) return [];
 
-  console.log('🎨 Formatting text:', text);
+  console.log('🎨 TextFormatter: Input text:', text);
+  console.log('🔍 TextFormatter: Contains ** patterns:', /\*{2}.*?\*{2}/.test(text));
+  console.log('🔍 TextFormatter: Contains *** patterns:', /\*{3}.*?\*{3}/.test(text));
   
   // Updated approach: handle both ** and *** patterns
   // First split by *** patterns, then split by ** patterns
   const parts = text.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*)/g);
   
-  console.log('📄 Split parts:', parts);
+  console.log('📄 TextFormatter: Split parts:', parts);
   
   return parts.map((part, index) => {
     // Check if this part is highlighted with *** (3 asterisks)
     if (part.startsWith('***') && part.endsWith('***')) {
       const highlightedText = part.slice(3, -3);
-      console.log(`✨ Highlighting (***): "${highlightedText}"`);
+      console.log(`✨ TextFormatter: Highlighting (***): "${highlightedText}"`);
       return (
         <span 
           key={index} 
-          className="font-bold italic text-primary"
-          style={{ fontWeight: 'bold', fontStyle: 'italic' }}
+          className="font-bold italic text-primary bg-yellow-100 px-1 rounded"
+          style={{ fontWeight: 'bold', fontStyle: 'italic', backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '4px' }}
         >
           {highlightedText}
         </span>
@@ -32,12 +34,12 @@ export const formatTextWithHighlights = (text: string): React.ReactNode[] => {
     // Check if this part is highlighted with ** (2 asterisks)
     if (part.startsWith('**') && part.endsWith('**')) {
       const highlightedText = part.slice(2, -2);
-      console.log(`✨ Highlighting (**): "${highlightedText}"`);
+      console.log(`✨ TextFormatter: Highlighting (**): "${highlightedText}"`);
       return (
         <span 
           key={index} 
-          className="font-bold italic text-primary"
-          style={{ fontWeight: 'bold', fontStyle: 'italic' }}
+          className="font-bold italic text-primary bg-yellow-100 px-1 rounded"
+          style={{ fontWeight: 'bold', fontStyle: 'italic', backgroundColor: '#fef3c7', padding: '2px 4px', borderRadius: '4px' }}
         >
           {highlightedText}
         </span>
