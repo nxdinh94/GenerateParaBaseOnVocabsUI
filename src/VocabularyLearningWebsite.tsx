@@ -42,7 +42,7 @@ interface ParagraphSettings {
 const VocabularyLearningWebsite: React.FC = () => {
   const { toast } = useToast();
   
-  // Load settings from localStorage on component mount
+  // Load settings from localStorage on component mount (excluding prompt)
   const [settings, setSettings] = useState<ParagraphSettings>(() => {
     const savedSettings = LocalStorageService.getUserSettingsOrDefaults();
     console.log('🔧 Loading settings from localStorage:', savedSettings);
@@ -53,7 +53,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       topic: savedSettings.topic,
       tone: savedSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
       customLength: savedSettings.customLength || 100,
-      prompt: savedSettings.prompt || ''
+      prompt: '' // Always start with empty prompt, don't load from localStorage
     };
     console.log('🔧 Initial settings state:', initialSettings);
     return initialSettings;
@@ -244,7 +244,7 @@ const VocabularyLearningWebsite: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [handleKeyPress]);
 
-  // Save settings to localStorage when they change (excluding vocabularies)
+  // Save settings to localStorage when they change (excluding vocabularies and prompt)
   useEffect(() => {
     const userSettings: UserSettings = {
       language: settings.language,
@@ -256,7 +256,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       customLength: settings.customLength,
       customTopics: customTopics,
       customLanguages: customLanguages,
-      prompt: settings.prompt || ''
+      prompt: '' // Don't save prompt to localStorage
     };
     LocalStorageService.saveUserSettings(userSettings);
   }, [settings, customTopics, customLanguages]); // Remove vocabularies from dependency array
@@ -278,7 +278,7 @@ const VocabularyLearningWebsite: React.FC = () => {
       topic: defaultSettings.topic,
       tone: defaultSettings.tone as 'none' | 'friendly' | 'formal' | 'humorous' | 'storytelling' | 'academic',
       customLength: defaultSettings.customLength,
-      prompt: defaultSettings.prompt || ''
+      prompt: '' // Always reset prompt to empty, don't use from localStorage
     });
     setVocabularies([]); // Reset to empty array instead of loading from localStorage
     setSavedCustomLength(defaultSettings.customLength || 100);
