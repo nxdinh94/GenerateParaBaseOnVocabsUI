@@ -4,6 +4,7 @@ import { SavedParagraphService } from '../services/savedParagraphService';
 import { inputHistoryService } from '../services/inputHistoryService';
 import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
 import { triggerVocabRefresh } from '../utils/vocabRefreshEvents';
+import { UserApiService } from '../services/userApiService';
 import type { 
   GenerateParagraphRequest, 
   GenerateParagraphResponse,
@@ -92,16 +93,21 @@ export class ParagraphController {
         }
 
         // Refresh vocabulary suggestions data after successful paragraph generation
-        try {
-          console.log('ParagraphController: Refreshing vocabulary suggestions data');
-          await VocabSuggestionsService.refreshVocabData();
-          
-          // Trigger UI refresh event to notify all components
-          triggerVocabRefresh();
-          console.log('ParagraphController: Triggered vocabulary refresh event for UI components');
-        } catch (vocabRefreshError) {
-          // Don't fail the main operation if vocab refresh fails
-          console.warn('ParagraphController: Failed to refresh vocabulary suggestions, but paragraph generation succeeded:', vocabRefreshError);
+        // Only if user is authenticated
+        if (UserApiService.isAuthenticated()) {
+          try {
+            console.log('ParagraphController: User authenticated, refreshing vocabulary suggestions data');
+            await VocabSuggestionsService.refreshVocabData();
+            
+            // Trigger UI refresh event to notify all components
+            triggerVocabRefresh();
+            console.log('ParagraphController: Triggered vocabulary refresh event for UI components');
+          } catch (vocabRefreshError) {
+            // Don't fail the main operation if vocab refresh fails
+            console.warn('ParagraphController: Failed to refresh vocabulary suggestions, but paragraph generation succeeded:', vocabRefreshError);
+          }
+        } else {
+          console.log('ParagraphController: User not authenticated, skipping vocabulary refresh');
         }
       }
       

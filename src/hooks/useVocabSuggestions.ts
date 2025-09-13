@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
 import { vocabRefreshEventEmitter } from '../utils/vocabRefreshEvents';
+import { UserApiService } from '../services/userApiService';
 import type { VocabFrequency } from '../types/api';
 
 /**
@@ -13,6 +14,16 @@ export const useVocabSuggestions = () => {
   const [error, setError] = useState<string | null>(null);
 
   const loadSuggestions = async () => {
+    // Check authentication before making API call
+    if (!UserApiService.isAuthenticated()) {
+      console.log('⚠️ useVocabSuggestions: User not authenticated, skipping vocabulary suggestions load');
+      setSuggestions([]);
+      setFrequencyData([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -47,8 +58,14 @@ export const useVocabSuggestions = () => {
   // Listen for vocab refresh events
   useEffect(() => {
     const unsubscribe = vocabRefreshEventEmitter.subscribe(() => {
-      console.log('🔄 useVocabSuggestions: Received refresh event, reloading suggestions');
-      loadSuggestions();
+      console.log('🔄 useVocabSuggestions: Received refresh event, checking authentication');
+      // Only refresh if user is authenticated
+      if (UserApiService.isAuthenticated()) {
+        console.log('🔄 useVocabSuggestions: User authenticated, reloading suggestions');
+        loadSuggestions();
+      } else {
+        console.log('⚠️ useVocabSuggestions: User not authenticated, skipping refresh');
+      }
     });
 
     return unsubscribe;

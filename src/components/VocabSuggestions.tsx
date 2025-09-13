@@ -33,6 +33,7 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
     setError(null);
     
     try {
+      
       const response = await VocabSuggestionsService.getUniqueVocabs();
       
       if (response.success && response.data) {
@@ -62,8 +63,14 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
   // Listen for vocab refresh events
   useEffect(() => {
     const unsubscribe = vocabRefreshEventEmitter.subscribe(() => {
-      console.log('🔄 VocabSuggestions: Received refresh event, reloading data');
-      fetchVocabSuggestions();
+      console.log('🔄 VocabSuggestions: Received refresh event, checking authentication');
+      // Only refresh if user is authenticated
+      if (UserApiService.isAuthenticated()) {
+        console.log('🔄 VocabSuggestions: User authenticated, reloading data');
+        fetchVocabSuggestions();
+      } else {
+        console.log('⚠️ VocabSuggestions: User not authenticated, skipping refresh');
+      }
     });
 
     return unsubscribe;
@@ -225,6 +232,13 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
       {!isLoading && !error && vocabData && displayedVocabs.length === 0 && (
         <div className="text-center py-8">
           <p className="text-muted-foreground">No vocabulary suggestions available</p>
+        </div>
+      )}
+
+      {/* Unauthenticated State */}
+      {!isLoading && !error && !vocabData && !UserApiService.isAuthenticated() && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Please log in to view vocabulary suggestions</p>
         </div>
       )}
     </Card>

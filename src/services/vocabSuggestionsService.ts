@@ -1,5 +1,6 @@
 // Service for handling vocabulary suggestions API calls
 import { apiClient, handleApiError } from './apiClient';
+import { UserApiService } from './userApiService';
 import type { VocabSuggestionsApiResponse, VocabSuggestionsResponse } from '../types/api';
 
 export class VocabSuggestionsService {
@@ -9,6 +10,15 @@ export class VocabSuggestionsService {
    */
   static async getUniqueVocabs(): Promise<VocabSuggestionsResponse> {
     try {
+      // Check authentication before making API call
+      if (!UserApiService.isAuthenticated()) {
+        console.log('⚠️ VocabSuggestionsService: User not authenticated, cannot fetch vocabulary data');
+        return {
+          success: false,
+          error: 'Authentication required to access vocabulary suggestions'
+        };
+      }
+
       console.log('🔄 Fetching unique vocabularies from API...');
       
       const response = await apiClient.get<VocabSuggestionsApiResponse>('/unique-vocabs');
