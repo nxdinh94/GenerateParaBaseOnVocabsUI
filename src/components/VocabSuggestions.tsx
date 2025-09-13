@@ -6,7 +6,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { RefreshCw, TrendingUp, Plus } from 'lucide-react';
 import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
+import { vocabRefreshEventEmitter } from '../utils/vocabRefreshEvents';
 import type { VocabFrequency } from '../types/api';
+import { UserApiService } from '@/services/userApiService';
 
 interface VocabSuggestionsProps {
   onAddVocab: (vocab: string) => void;
@@ -50,7 +52,21 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
   };
 
   useEffect(() => {
-    fetchVocabSuggestions();
+    // check if authenticated before fetching
+    if (UserApiService.isAuthenticated()) {
+      fetchVocabSuggestions();
+      return;
+    }
+  }, []);
+
+  // Listen for vocab refresh events
+  useEffect(() => {
+    const unsubscribe = vocabRefreshEventEmitter.subscribe(() => {
+      console.log('🔄 VocabSuggestions: Received refresh event, reloading data');
+      fetchVocabSuggestions();
+    });
+
+    return unsubscribe;
   }, []);
 
   const handleAddVocab = (vocab: string) => {

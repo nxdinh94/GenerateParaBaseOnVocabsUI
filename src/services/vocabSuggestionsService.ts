@@ -91,4 +91,21 @@ export class VocabSuggestionsService {
       return [];
     }
   }
+
+  /**
+   * Refresh vocabulary data by calling the API
+   * This is typically called after operations that might change vocab frequency (like generating paragraphs)
+   */
+  static async refreshVocabData(): Promise<VocabSuggestionsResponse> {
+    console.log('🔄 Refreshing vocabulary suggestions data...');
+    const response = await this.getUniqueVocabs();
+    
+    if (response.success) {
+      console.log('✅ Vocabulary suggestions data refreshed successfully');
+    } else {
+      console.warn('⚠️ Failed to refresh vocabulary suggestions data:', response.error);
+    }
+    
+    return response;
+  }
 }

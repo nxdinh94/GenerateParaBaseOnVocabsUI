@@ -2,6 +2,8 @@
 import { ParagraphService } from '../services/paragraphService';
 import { SavedParagraphService } from '../services/savedParagraphService';
 import { inputHistoryService } from '../services/inputHistoryService';
+import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
+import { triggerVocabRefresh } from '../utils/vocabRefreshEvents';
 import type { 
   GenerateParagraphRequest, 
   GenerateParagraphResponse,
@@ -87,6 +89,19 @@ export class ParagraphController {
         } catch (inputHistoryError) {
           // Don't fail the main operation if input history fails
           console.warn('ParagraphController: Failed to save input history, but paragraph generation succeeded:', inputHistoryError);
+        }
+
+        // Refresh vocabulary suggestions data after successful paragraph generation
+        try {
+          console.log('ParagraphController: Refreshing vocabulary suggestions data');
+          await VocabSuggestionsService.refreshVocabData();
+          
+          // Trigger UI refresh event to notify all components
+          triggerVocabRefresh();
+          console.log('ParagraphController: Triggered vocabulary refresh event for UI components');
+        } catch (vocabRefreshError) {
+          // Don't fail the main operation if vocab refresh fails
+          console.warn('ParagraphController: Failed to refresh vocabulary suggestions, but paragraph generation succeeded:', vocabRefreshError);
         }
       }
       

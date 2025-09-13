@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
+import { vocabRefreshEventEmitter } from '../utils/vocabRefreshEvents';
 import type { VocabFrequency } from '../types/api';
 
 /**
@@ -41,6 +42,16 @@ export const useVocabSuggestions = () => {
 
   useEffect(() => {
     loadSuggestions();
+  }, []);
+
+  // Listen for vocab refresh events
+  useEffect(() => {
+    const unsubscribe = vocabRefreshEventEmitter.subscribe(() => {
+      console.log('🔄 useVocabSuggestions: Received refresh event, reloading suggestions');
+      loadSuggestions();
+    });
+
+    return unsubscribe;
   }, []);
 
   return {
