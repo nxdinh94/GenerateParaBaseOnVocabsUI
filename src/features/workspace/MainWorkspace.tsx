@@ -15,6 +15,7 @@ interface MainWorkspaceProps {
   historyLength: number;
   currentParagraph: string;
   saveParagraph: () => void;
+  onEditSave?: (editedContent: string) => void;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -26,7 +27,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   getRandomFromHistory,
   historyLength,
   currentParagraph,
-  saveParagraph
+  saveParagraph,
+  onEditSave
 }) => {
   return (
     <div className="space-y-6">
@@ -68,6 +70,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         currentParagraph={currentParagraph}
         isLoading={isLoading}
         saveParagraph={saveParagraph}
+        onEditSave={onEditSave}
       />
     </div>
   );

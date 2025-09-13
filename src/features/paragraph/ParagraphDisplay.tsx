@@ -10,12 +10,14 @@ interface ParagraphDisplayProps {
   currentParagraph: string;
   isLoading: boolean;
   saveParagraph: () => void;
+  onEditSave?: (editedContent: string) => void;
 }
 
 export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
   currentParagraph,
   isLoading,
-  saveParagraph
+  saveParagraph,
+  onEditSave
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -26,9 +28,10 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
   };
 
   const handleSaveEdit = () => {
-    // Note: In the original code, this would update currentParagraph
-    // But since currentParagraph is passed as props, we'd need a callback
-    // For now, we'll just close editing mode
+    // Save the edited content if callback is provided
+    if (onEditSave && editContent.trim()) {
+      onEditSave(editContent);
+    }
     setIsEditing(false);
   };
 

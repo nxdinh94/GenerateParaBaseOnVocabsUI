@@ -277,6 +277,11 @@ const VocabularyLearningWebsite: React.FC = () => {
     console.log('⚡ Settings reset to defaults (vocabularies cleared)');
   };
 
+  const handleEditSave = useCallback((editedContent: string) => {
+    setCurrentParagraph(editedContent);
+    console.log('📝 Paragraph content updated from edit');
+  }, []);
+
   return (
     <>
       <HeroSection />
@@ -294,6 +299,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               historyLength={history.length}
               currentParagraph={currentParagraph}
               saveParagraph={saveParagraph}
+              onEditSave={handleEditSave}
             />
           </div>
           <div className="lg:col-span-1">
