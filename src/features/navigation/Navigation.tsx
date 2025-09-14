@@ -73,6 +73,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   const handleLoginSuccess = () => {
     refreshAuth();
+    // Redirect to home page and refresh to ensure clean state after login
+    window.location.href = '/';
   };
 
   const handleLogout = () => {

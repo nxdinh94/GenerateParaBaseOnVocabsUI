@@ -16,6 +16,8 @@ interface MainWorkspaceProps {
   currentParagraph: string;
   saveParagraph: () => void;
   onEditSave?: (editedContent: string) => void;
+  isSaved?: boolean;
+  isSaving?: boolean;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -28,7 +30,9 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   historyLength,
   currentParagraph,
   saveParagraph,
-  onEditSave
+  onEditSave,
+  isSaved,
+  isSaving
 }) => {
   return (
     <div className="space-y-6">
@@ -72,6 +76,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         isLoading={isLoading}
         saveParagraph={saveParagraph}
         onEditSave={onEditSave}
+        isSaved={isSaved}
+        isSaving={isSaving}
       />
     </div>
   );

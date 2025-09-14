@@ -71,6 +71,8 @@ const VocabularyLearningWebsite: React.FC = () => {
   // Other state variables
   const [currentParagraph, setCurrentParagraph] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Load saved data from localStorage for history, but saved paragraphs will come from API
   const [history, setHistory] = useState<GeneratedParagraph[]>(() => {
@@ -134,6 +136,7 @@ const VocabularyLearningWebsite: React.FC = () => {
         
         setCurrentParagraph(generatedContent);
         setHistory(prev => [newParagraph, ...prev]);
+        setIsSaved(false); // Reset save state for new paragraph
       } else {
         // Handle API error
         const errorMessage = response.error || 'Failed to generate paragraph';
@@ -170,7 +173,7 @@ const VocabularyLearningWebsite: React.FC = () => {
 
   // Save paragraph to API
   const saveParagraph = async () => {
-    if (!currentParagraph) return;
+    if (!currentParagraph || isSaved || isSaving) return;
     
     // Check if user is authenticated
     if (!isAuthenticated) {
@@ -181,6 +184,8 @@ const VocabularyLearningWebsite: React.FC = () => {
       });
       return;
     }
+    
+    setIsSaving(true);
     
     try {
       const response = await paragraphController.saveParagraph(
@@ -204,6 +209,9 @@ const VocabularyLearningWebsite: React.FC = () => {
         
         // Also save to localStorage for backup (optional)
         LocalStorageService.saveParagraphToFavorites(currentParagraph, vocabularies);
+        
+        // Mark as saved
+        setIsSaved(true);
       } else {
         console.error('❌ Failed to save paragraph:', response.error);
         toast({
@@ -219,6 +227,8 @@ const VocabularyLearningWebsite: React.FC = () => {
         title: "Lỗi mạng",
         description: error instanceof Error ? error.message : 'Không thể kết nối đến server.',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -231,6 +241,7 @@ const VocabularyLearningWebsite: React.FC = () => {
     setCurrentParagraph(randomParagraph.content);
     setVocabularies(randomParagraph.vocabularies);
     setSettings(randomParagraph.settings);
+    setIsSaved(false); // Reset save state when loading from history
   };
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
@@ -289,6 +300,7 @@ const VocabularyLearningWebsite: React.FC = () => {
 
   const handleEditSave = useCallback((editedContent: string) => {
     setCurrentParagraph(editedContent);
+    setIsSaved(false); // Reset save state when content is edited
     console.log('📝 Paragraph content updated from edit');
   }, []);
 
@@ -310,6 +322,8 @@ const VocabularyLearningWebsite: React.FC = () => {
               currentParagraph={currentParagraph}
               saveParagraph={saveParagraph}
               onEditSave={handleEditSave}
+              isSaved={isSaved}
+              isSaving={isSaving}
             />
           </div>
           <div className="lg:col-span-1">

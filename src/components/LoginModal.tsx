@@ -48,11 +48,46 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempt:', formData);
-    onClose();
+    setIsLoading(true);
+    
+    try {
+      // TODO: Implement actual email/password login API call
+      // For now, simulate successful login for demonstration
+      console.log('Login attempt:', formData);
+      
+      // When actual API is implemented, uncomment this:
+      // const result = await UserApiService.emailLogin({
+      //   email: formData.email,
+      //   password: formData.password,
+      //   rememberMe: formData.rememberMe
+      // });
+      // 
+      // UserApiService.storeAuthTokens(result);
+      // 
+      // const currentUser = UserApiService.getCurrentUserFromToken();
+      // const userName = currentUser?.name || 'bạn';
+      // 
+      // toast({
+      //   title: "Đăng nhập thành công",
+      //   description: `Chào mừng ${userName}!`,
+      // });
+      
+      // Call success callback to refresh auth state and redirect
+      onLoginSuccess?.();
+      
+      onClose();
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Lỗi đăng nhập",
+        description: "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = useGoogleLogin({
@@ -190,8 +225,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </div>
 
             {/* Login Button */}
-            <Button type="submit" className="w-full">
-              Đăng nhập
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
             </Button>
           </form>
 

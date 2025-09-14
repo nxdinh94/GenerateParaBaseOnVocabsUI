@@ -11,13 +11,17 @@ interface ParagraphDisplayProps {
   isLoading: boolean;
   saveParagraph: () => void;
   onEditSave?: (editedContent: string) => void;
+  isSaved?: boolean;
+  isSaving?: boolean;
 }
 
 export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
   currentParagraph,
   isLoading,
   saveParagraph,
-  onEditSave
+  onEditSave,
+  isSaved = false,
+  isSaving = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -60,9 +64,10 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
               variant="outline"
               size="sm"
               onClick={saveParagraph}
+              disabled={isSaved || isSaving}
             >
               <Save className="h-4 w-4 mr-2" />
-              Save
+              {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
             </Button>
             <Button
               variant="outline"
