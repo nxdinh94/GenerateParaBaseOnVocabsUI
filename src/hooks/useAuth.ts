@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserApiService, type User } from '@/services/userApiService';
+import { LocalStorageService } from '@/services/localStorageService';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -59,6 +60,8 @@ export const useAuth = () => {
 
   const logout = () => {
     UserApiService.clearStoredAuth();
+    // Clear history data from localStorage (preserves user settings)
+    LocalStorageService.clearHistoryData();
     setAuthState({
       isAuthenticated: false,
       user: null,

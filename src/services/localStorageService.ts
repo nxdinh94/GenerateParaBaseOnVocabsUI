@@ -229,6 +229,17 @@ export class LocalStorageService {
     }
   }
 
+  // Clear only history-related data (preserves user settings)
+  static clearHistoryData(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.SAVED_PARAGRAPHS);
+      localStorage.removeItem(STORAGE_KEYS.PARAGRAPH_HISTORY);
+      console.log('✅ History data cleared from localStorage');
+    } catch (error) {
+      console.error('❌ Failed to clear history data:', error);
+    }
+  }
+
   // Export data for backup
   static exportUserData(): string {
     try {
