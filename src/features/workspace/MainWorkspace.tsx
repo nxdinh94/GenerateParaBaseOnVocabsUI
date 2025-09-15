@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TagInput } from '@/features/vocabulary/TagInput';
 import { ParagraphDisplay } from '@/features/paragraph/ParagraphDisplay';
+import type { VocabExplanations, ExplanationInParagraph } from '@/types/api';
 
 interface MainWorkspaceProps {
   vocabularies: string[];
@@ -18,6 +19,8 @@ interface MainWorkspaceProps {
   onEditSave?: (editedContent: string) => void;
   isSaved?: boolean;
   isSaving?: boolean;
+  explainVocabs?: VocabExplanations;
+  explanationInParagraph?: ExplanationInParagraph;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -32,7 +35,9 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   saveParagraph,
   onEditSave,
   isSaved,
-  isSaving
+  isSaving,
+  explainVocabs,
+  explanationInParagraph
 }) => {
   return (
     <div className="space-y-6">
@@ -78,6 +83,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         onEditSave={onEditSave}
         isSaved={isSaved}
         isSaving={isSaving}
+        explainVocabs={explainVocabs}
+        explanationInParagraph={explanationInParagraph}
       />
     </div>
   );

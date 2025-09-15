@@ -15,7 +15,8 @@ export interface UserSettings {
 const STORAGE_KEYS = {
   USER_SETTINGS: 'english-ui-user-settings',
   SAVED_PARAGRAPHS: 'english-ui-saved-paragraphs',
-  PARAGRAPH_HISTORY: 'english-ui-paragraph-history'
+  PARAGRAPH_HISTORY: 'english-ui-paragraph-history',
+  VOCAB_DICTIONARY_COLLAPSED: 'english-ui-vocab-dictionary-collapsed'
 } as const;
 
 export class LocalStorageService {
@@ -278,6 +279,30 @@ export class LocalStorageService {
     } catch (error) {
       console.error('❌ Failed to import user data:', error);
       return false;
+    }
+  }
+
+  /**
+   * Save vocabulary dictionary collapsed state
+   */
+  static saveVocabDictionaryCollapsed(isCollapsed: boolean): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.VOCAB_DICTIONARY_COLLAPSED, JSON.stringify(isCollapsed));
+    } catch (error) {
+      console.error('Failed to save vocabulary dictionary collapsed state:', error);
+    }
+  }
+
+  /**
+   * Get vocabulary dictionary collapsed state
+   */
+  static getVocabDictionaryCollapsed(): boolean {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.VOCAB_DICTIONARY_COLLAPSED);
+      return saved ? JSON.parse(saved) : false; // Default to expanded
+    } catch (error) {
+      console.error('Failed to get vocabulary dictionary collapsed state:', error);
+      return false; // Default to expanded
     }
   }
 }

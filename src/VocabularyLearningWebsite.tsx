@@ -17,6 +17,8 @@ import { MainWorkspace } from './features/workspace/MainWorkspace';
 import { useToast } from './hooks/use-toast';
 
 // Types
+import type { VocabExplanations, ExplanationInParagraph } from './types/api';
+
 interface GeneratedParagraph {
   id: string;
   content: string;
@@ -70,6 +72,8 @@ const VocabularyLearningWebsite: React.FC = () => {
 
   // Other state variables
   const [currentParagraph, setCurrentParagraph] = useState<string>('');
+  const [currentExplainVocabs, setCurrentExplainVocabs] = useState<VocabExplanations | undefined>();
+  const [currentExplanationInParagraph, setCurrentExplanationInParagraph] = useState<ExplanationInParagraph | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -135,6 +139,19 @@ const VocabularyLearningWebsite: React.FC = () => {
         };
         
         setCurrentParagraph(generatedContent);
+        
+        // Debug logging for vocabulary explanations
+        console.log('🐛 Debug - explainVocabs:', response.data.explainVocabs);
+        console.log('🐛 Debug - explanationInParagraph:', response.data.explanationInParagraph);
+        console.log('🐛 Debug - explanationInParagraph type:', typeof response.data.explanationInParagraph);
+        if (response.data.explanationInParagraph) {
+          Object.entries(response.data.explanationInParagraph).forEach(([key, value]) => {
+            console.log(`🐛 Debug - explanationInParagraph[${key}]:`, value, 'type:', typeof value);
+          });
+        }
+        
+        setCurrentExplainVocabs(response.data.explainVocabs);
+        setCurrentExplanationInParagraph(response.data.explanationInParagraph);
         setHistory(prev => [newParagraph, ...prev]);
         setIsSaved(false); // Reset save state for new paragraph
       } else {
@@ -151,6 +168,8 @@ const VocabularyLearningWebsite: React.FC = () => {
         
         // Show error in the paragraph field
         setCurrentParagraph(`Error: ${errorMessage}`);
+        setCurrentExplainVocabs(undefined);
+        setCurrentExplanationInParagraph(undefined);
       }
     } catch (error) {
       console.error('Network Error:', error);
@@ -163,6 +182,8 @@ const VocabularyLearningWebsite: React.FC = () => {
       });
       
       setCurrentParagraph(`Network Error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`);
+      setCurrentExplainVocabs(undefined);
+      setCurrentExplanationInParagraph(undefined);
     } finally {
       setIsLoading(false);
     }
@@ -324,6 +345,8 @@ const VocabularyLearningWebsite: React.FC = () => {
               onEditSave={handleEditSave}
               isSaved={isSaved}
               isSaving={isSaving}
+              explainVocabs={currentExplainVocabs}
+              explanationInParagraph={currentExplanationInParagraph}
             />
           </div>
           <div className="lg:col-span-1">

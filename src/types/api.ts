@@ -9,10 +9,29 @@ export interface GenerateParagraphRequest {
   prompt?: string;
 }
 
-// API response from server
+// API response from server - new structure with vocabulary explanations
+export interface VocabMeaning {
+  meaning: string;
+  example: string;
+}
+
+export interface VocabExplanations {
+  [vocab: string]: VocabMeaning[];
+}
+
+export interface ExplanationInParagraph {
+  [vocab: string]: string;
+}
+
+// Alternative type for when API returns explanation as single string
+export type ExplanationText = string;
+
 export interface ApiParagraphResponse {
-  result: string;
+  result?: string;  // Legacy support
   status: boolean;
+  paragraph?: string;
+  explain_vocabs?: VocabExplanations;
+  explanation_in_paragraph?: ExplanationInParagraph;
 }
 
 export interface GenerateParagraphResponse {
@@ -20,6 +39,8 @@ export interface GenerateParagraphResponse {
   data?: {
     paragraph: string;
     message?: string;
+    explainVocabs?: VocabExplanations;
+    explanationInParagraph?: ExplanationInParagraph;
   };
   error?: string;
 }

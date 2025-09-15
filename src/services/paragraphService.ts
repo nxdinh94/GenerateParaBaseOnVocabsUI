@@ -48,36 +48,143 @@ export class ParagraphService {
   }
 
   /**
+   * Parse JSON response if it comes wrapped in ```json``` markdown
+   */
+  private parseJsonResponse(result: string): any {
+    try {
+      // Remove ```json``` wrapper if present
+      const cleanedResult = result.replace(/^```json\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+      
+      // Try to parse as JSON
+      const parsed = JSON.parse(cleanedResult);
+      console.log('🔧 ParagraphService: Successfully parsed JSON result:', parsed);
+      
+      // Validate and clean the parsed data
+      if (parsed && typeof parsed === 'object') {
+        // Ensure explanation_in_paragraph values are strings
+        if (parsed.explanation_in_paragraph && typeof parsed.explanation_in_paragraph === 'object') {
+          Object.keys(parsed.explanation_in_paragraph).forEach(key => {
+            if (typeof parsed.explanation_in_paragraph[key] !== 'string') {
+              console.warn(`⚠️ ParagraphService: explanation_in_paragraph[${key}] is not a string, converting...`);
+              parsed.explanation_in_paragraph[key] = String(parsed.explanation_in_paragraph[key]);
+            }
+          });
+          console.log('✅ ParagraphService: explanation_in_paragraph object format validated');
+        }
+        
+        // Ensure explain_vocabs values are arrays of meaning objects
+        if (parsed.explain_vocabs) {
+          Object.keys(parsed.explain_vocabs).forEach(vocab => {
+            if (!Array.isArray(parsed.explain_vocabs[vocab])) {
+              console.warn(`⚠️ ParagraphService: explain_vocabs[${vocab}] is not an array, converting...`);
+              parsed.explain_vocabs[vocab] = [parsed.explain_vocabs[vocab]];
+            }
+            
+            // Ensure each meaning has proper structure
+            parsed.explain_vocabs[vocab] = parsed.explain_vocabs[vocab].map((meaning: any) => {
+              if (typeof meaning === 'string') {
+                return { meaning: meaning, example: '' };
+              } else if (typeof meaning === 'object' && meaning !== null) {
+                return {
+                  meaning: meaning.meaning || String(meaning),
+                  example: meaning.example || ''
+                };
+              } else {
+                return { meaning: String(meaning), example: '' };
+              }
+            });
+          });
+        }
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.log('ℹ️ ParagraphService: Result is not JSON, treating as plain text');
+      return null;
+    }
+  }
+
+  /**
    * Map API response to our expected format with vocabulary highlighting
    */
   private mapApiResponse(apiResponse: ApiParagraphResponse, vocabularies: string[]): GenerateParagraphResponse {
-    if (apiResponse.status && apiResponse.result) {
-      console.log('🔍 ParagraphService: Raw API result:', apiResponse.result);
-      
-      // Check if the API result already contains highlighting markers (** or ***)
-      const hasExistingHighlighting = /\*{2,3}.*?\*{2,3}/.test(apiResponse.result);
-      
-      let finalParagraph: string;
-      
-      if (hasExistingHighlighting) {
-        // API already provided highlighting, use it as-is
-        console.log('✨ ParagraphService: API provided highlighting detected, preserving it');
-        finalParagraph = apiResponse.result;
-      } else {
-        // No highlighting from API, apply our own highlighting
-        console.log('🎯 ParagraphService: No API highlighting detected, applying vocabulary highlighting');
-        finalParagraph = highlightVocabularies(apiResponse.result, vocabularies);
+    if (apiResponse.status) {
+      // Handle new structured response
+      if (apiResponse.paragraph) {
+        console.log('🔍 ParagraphService: New structured API response detected');
+        console.log('📄 Paragraph:', apiResponse.paragraph);
+        console.log('📚 Vocabulary explanations:', apiResponse.explain_vocabs);
+        console.log('💡 Context explanations:', apiResponse.explanation_in_paragraph);
+        
+        return {
+          success: true,
+          data: {
+            paragraph: apiResponse.paragraph,
+            message: 'Paragraph generated successfully',
+            explainVocabs: apiResponse.explain_vocabs,
+            explanationInParagraph: apiResponse.explanation_in_paragraph
+          }
+        };
       }
-      
-      console.log('📄 ParagraphService: Final paragraph:', finalParagraph);
-      
-      return {
-        success: true,
-        data: {
-          paragraph: finalParagraph,
-          message: 'Paragraph generated successfully'
+      // Handle legacy response format or JSON wrapped response
+      else if (apiResponse.result) {
+        console.log('🔍 ParagraphService: Processing result:', apiResponse.result);
+        
+        // Try to parse as JSON first
+        const parsedJson = this.parseJsonResponse(apiResponse.result);
+        
+        if (parsedJson && parsedJson.paragraph) {
+          // JSON response detected
+          console.log('✨ ParagraphService: JSON response detected');
+          console.log('📄 Parsed paragraph:', parsedJson.paragraph);
+          console.log('📚 Parsed vocabulary explanations:', parsedJson.explain_vocabs);
+          console.log('💡 Parsed context explanations:', parsedJson.explanation_in_paragraph);
+          
+          return {
+            success: true,
+            data: {
+              paragraph: parsedJson.paragraph,
+              message: 'Paragraph generated successfully',
+              explainVocabs: parsedJson.explain_vocabs,
+              explanationInParagraph: parsedJson.explanation_in_paragraph
+            }
+          };
+        } else {
+          // Legacy plain text response
+          console.log('🔍 ParagraphService: Legacy plain text result:', apiResponse.result);
+          
+          // Check if the API result already contains highlighting markers (** or ***)
+          const hasExistingHighlighting = /\*{2,3}.*?\*{2,3}/.test(apiResponse.result);
+          
+          let finalParagraph: string;
+          
+          if (hasExistingHighlighting) {
+            // API already provided highlighting, use it as-is
+            console.log('✨ ParagraphService: API provided highlighting detected, preserving it');
+            finalParagraph = apiResponse.result;
+          } else {
+            // No highlighting from API, apply our own highlighting
+            console.log('🎯 ParagraphService: No API highlighting detected, applying vocabulary highlighting');
+            finalParagraph = highlightVocabularies(apiResponse.result, vocabularies);
+          }
+          
+          console.log('📄 ParagraphService: Final paragraph:', finalParagraph);
+          
+          return {
+            success: true,
+            data: {
+              paragraph: finalParagraph,
+              message: 'Paragraph generated successfully'
+            }
+          };
         }
-      };
+      }
+      else {
+        return {
+          success: false,
+          error: 'Invalid response format - missing paragraph content'
+        };
+      }
     } else {
       return {
         success: false,
