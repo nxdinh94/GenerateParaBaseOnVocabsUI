@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserApiService, type User } from '@/services/userApiService';
 import { LocalStorageService } from '@/services/localStorageService';
+import { toast } from './use-toast';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -58,17 +59,30 @@ export const useAuth = () => {
     }
   };
 
-  const logout = () => {
-    UserApiService.clearStoredAuth();
-    // Clear history data from localStorage (preserves user settings)
-    LocalStorageService.clearHistoryData();
-    setAuthState({
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-    });
-    // Redirect to home page and refresh to clear all data in one step
-    window.location.href = '/';
+  const logout = async () => {
+    try {
+      // Call logout API with bearer token before clearing tokens
+      await UserApiService.logout();
+      console.log('✅ Logout API call successful');
+            UserApiService.clearStoredAuth();
+      // Clear history data from localStorage (preserves user settings)
+      LocalStorageService.clearHistoryData();
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+      });
+      // Redirect to home page and refresh to clear all data in one step
+      window.location.href = '/';
+    } catch (error) {
+      console.error('❌ Logout API call failed:', error);
+      // Show toast instead
+      toast({
+        title: 'Logout Failed',
+        description: 'An error occurred while logging out. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const refreshAuth = () => {

@@ -77,10 +77,16 @@ export const Navigation: React.FC<NavigationProps> = ({
     window.location.href = '/';
   };
 
-  const handleLogout = () => {
-    logout();
-    // Note: Page will be refreshed by logout function, but navigate to home as fallback
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Note: Page will be refreshed by logout function, but navigate to home as fallback
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still navigate to home if logout fails
+      navigate('/');
+    }
   };
 
   return (
@@ -156,8 +162,8 @@ export const Navigation: React.FC<NavigationProps> = ({
                     <Button 
                       variant="outline" 
                       className="justify-start text-red-600"
-                      onClick={() => {
-                        handleLogout();
+                      onClick={async () => {
+                        await handleLogout();
                         setIsMobileMenuOpen(false);
                       }}
                     >

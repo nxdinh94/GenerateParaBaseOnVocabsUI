@@ -122,9 +122,9 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
             {/* Logout Option */}
             <button
               className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-              onClick={() => {
+              onClick={async () => {
                 setIsOpen(false);
-                onLogout();
+                await onLogout();
               }}
             >
               <LogOut className="w-4 h-4 mr-3" />
