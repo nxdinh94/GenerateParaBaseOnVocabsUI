@@ -47,6 +47,7 @@ export class ParagraphController {
       if (settings.length === 'short') paragraphLength = 70;
       else if (settings.length === 'medium') paragraphLength = 100;
       else if (settings.length === 'long') paragraphLength = 150;
+      else if (settings.length === 'sentence') paragraphLength = 1;
       else if (settings.length === 'custom' && settings.customLength) {
         paragraphLength = settings.customLength;
       } else {

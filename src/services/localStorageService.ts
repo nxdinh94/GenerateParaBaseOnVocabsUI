@@ -16,7 +16,8 @@ const STORAGE_KEYS = {
   USER_SETTINGS: 'english-ui-user-settings',
   SAVED_PARAGRAPHS: 'english-ui-saved-paragraphs',
   PARAGRAPH_HISTORY: 'english-ui-paragraph-history',
-  VOCAB_DICTIONARY_COLLAPSED: 'english-ui-vocab-dictionary-collapsed'
+  VOCAB_DICTIONARY_COLLAPSED: 'english-ui-vocab-dictionary-collapsed',
+  CONTEXT_EXPLANATIONS_COLLAPSED: 'english-ui-context-explanations-collapsed'
 } as const;
 
 export class LocalStorageService {
@@ -302,6 +303,30 @@ export class LocalStorageService {
       return saved ? JSON.parse(saved) : false; // Default to expanded
     } catch (error) {
       console.error('Failed to get vocabulary dictionary collapsed state:', error);
+      return false; // Default to expanded
+    }
+  }
+
+  /**
+   * Save context explanations collapsed state
+   */
+  static saveContextExplanationsCollapsed(isCollapsed: boolean): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CONTEXT_EXPLANATIONS_COLLAPSED, JSON.stringify(isCollapsed));
+    } catch (error) {
+      console.error('Failed to save context explanations collapsed state:', error);
+    }
+  }
+
+  /**
+   * Get context explanations collapsed state
+   */
+  static getContextExplanationsCollapsed(): boolean {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CONTEXT_EXPLANATIONS_COLLAPSED);
+      return saved ? JSON.parse(saved) : false; // Default to expanded
+    } catch (error) {
+      console.error('Failed to get context explanations collapsed state:', error);
       return false; // Default to expanded
     }
   }

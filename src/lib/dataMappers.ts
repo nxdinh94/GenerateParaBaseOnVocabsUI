@@ -4,7 +4,7 @@ import type { SavedParagraphGroup } from '../types/api';
 // Import the ParagraphSettings type from the UI component
 interface ParagraphSettings {
   language: string;
-  length: 'short' | 'medium' | 'long' | 'custom';
+  length: 'short' | 'medium' | 'long' | 'sentence' | 'custom';
   customLength?: number;
   level: 'none' | 'beginner' | 'intermediate' | 'advanced';
   topic: string;

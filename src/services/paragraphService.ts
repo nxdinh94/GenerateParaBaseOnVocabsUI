@@ -83,14 +83,26 @@ export class ParagraphService {
             // Ensure each meaning has proper structure
             parsed.explain_vocabs[vocab] = parsed.explain_vocabs[vocab].map((meaning: any) => {
               if (typeof meaning === 'string') {
-                return { meaning: meaning, example: '' };
+                return { 
+                  meaning: meaning, 
+                  example: '',
+                  phonetic_transcription: '',
+                  part_of_speech: ''
+                };
               } else if (typeof meaning === 'object' && meaning !== null) {
                 return {
                   meaning: meaning.meaning || String(meaning),
-                  example: meaning.example || ''
+                  example: meaning.example || '',
+                  phonetic_transcription: meaning.phonetic_transcription || '',
+                  part_of_speech: meaning.part_of_speech || ''
                 };
               } else {
-                return { meaning: String(meaning), example: '' };
+                return { 
+                  meaning: String(meaning), 
+                  example: '',
+                  phonetic_transcription: '',
+                  part_of_speech: ''
+                };
               }
             });
           });

@@ -36,14 +36,26 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
   const [isVocabDictionaryCollapsed, setIsVocabDictionaryCollapsed] = useState(() => 
     LocalStorageService.getVocabDictionaryCollapsed()
   );
+  const [isContextExplanationsCollapsed, setIsContextExplanationsCollapsed] = useState(() => 
+    LocalStorageService.getContextExplanationsCollapsed()
+  );
 
   // Save vocabulary dictionary collapsed state to localStorage
   useEffect(() => {
     LocalStorageService.saveVocabDictionaryCollapsed(isVocabDictionaryCollapsed);
   }, [isVocabDictionaryCollapsed]);
 
+  // Save context explanations collapsed state to localStorage
+  useEffect(() => {
+    LocalStorageService.saveContextExplanationsCollapsed(isContextExplanationsCollapsed);
+  }, [isContextExplanationsCollapsed]);
+
   const toggleVocabDictionary = () => {
     setIsVocabDictionaryCollapsed(!isVocabDictionaryCollapsed);
+  };
+
+  const toggleContextExplanations = () => {
+    setIsContextExplanationsCollapsed(!isContextExplanationsCollapsed);
   };
 
   // Debug logging
@@ -159,26 +171,49 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
       {/* Section 2: Context Explanations */}
       {explanationInParagraph && Object.keys(explanationInParagraph).length > 0 && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">📖 Context Explanations</h3>
-          <div className="space-y-4">
-            {Object.entries(explanationInParagraph).map(([vocab, explanation]) => {
-              // Ensure explanation is a string
-              const explanationText = typeof explanation === 'string' ? explanation : JSON.stringify(explanation);
-              
-              return (
-                <div key={vocab} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-md">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="font-semibold">
-                      {vocab}
-                    </Badge>
-                  </div>
-                  <p className="text-blue-800 text-sm" dangerouslySetInnerHTML={{
-                    __html: explanationText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-900 font-bold">$1</strong>')
-                  }} />
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">📖 Context Explanations</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleContextExplanations}
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+            >
+              {isContextExplanationsCollapsed ? (
+                <>
+                  <span>Expand</span>
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <span>Collapse</span>
+                  <ChevronUp className="h-4 w-4" />
+                </>
+              )}
+            </Button>
           </div>
+          
+          {!isContextExplanationsCollapsed && (
+            <div className="space-y-4">
+              {Object.entries(explanationInParagraph).map(([vocab, explanation]) => {
+                // Ensure explanation is a string
+                const explanationText = typeof explanation === 'string' ? explanation : JSON.stringify(explanation);
+                
+                return (
+                  <div key={vocab} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-md">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary" className="font-semibold">
+                        {vocab}
+                      </Badge>
+                    </div>
+                    <p className="text-blue-800 text-sm" dangerouslySetInnerHTML={{
+                      __html: explanationText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-900 font-bold">$1</strong>')
+                    }} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 
@@ -217,10 +252,29 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
                   <div key={vocab} className="space-y-3">
                     {index > 0 && <Separator className="my-4" />}
                     
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-base font-bold px-3 py-1">
-                        {vocab}
-                      </Badge>
+                    <div className="flex flex-col gap-2">
+                      {/* Hàng trên: Từ vựng */}
+                      <div>
+                        <Badge variant="outline" className="text-base font-bold px-3 py-1">
+                          {vocab}
+                        </Badge>
+                      </div>
+                      
+                      {/* Hàng dưới: Part of speech và phonetic transcription */}
+                      {meaningsArray.length > 0 && typeof meaningsArray[0] === 'object' && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          {meaningsArray[0].part_of_speech && (
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
+                              {meaningsArray[0].part_of_speech}
+                            </Badge>
+                          )}
+                          {meaningsArray[0].phonetic_transcription && (
+                            <span className="italic font-mono">
+                              {meaningsArray[0].phonetic_transcription}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-3 ml-4">
@@ -232,12 +286,35 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
                         const example = typeof meaningObj === 'object' && meaningObj.example 
                           ? meaningObj.example 
                           : '';
+                        const partOfSpeech = typeof meaningObj === 'object' && meaningObj.part_of_speech 
+                          ? meaningObj.part_of_speech 
+                          : '';
+                        const phoneticTranscription = typeof meaningObj === 'object' && meaningObj.phonetic_transcription 
+                          ? meaningObj.phonetic_transcription 
+                          : '';
                           
                         return (
                           <div key={meaningIndex} className="border-l-2 border-gray-200 pl-4">
-                            <p className="text-gray-800 mb-2">
-                              <span className="font-semibold text-gray-600">{meaningIndex + 1}.</span> {meaning}
-                            </p>
+                            <div className="flex items-start justify-between mb-2">
+                              <p className="text-gray-800 flex-1">
+                                <span className="font-semibold text-gray-600">{meaningIndex + 1}.</span> {meaning}
+                              </p>
+                              {/* Show part of speech and phonetic for each meaning if different from first one */}
+                              {meaningIndex > 0 && (partOfSpeech || phoneticTranscription) && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600 ml-2">
+                                  {partOfSpeech && (
+                                    <Badge variant="secondary" className="text-xs px-2 py-1">
+                                      {partOfSpeech}
+                                    </Badge>
+                                  )}
+                                  {phoneticTranscription && (
+                                    <span className="italic text-blue-600 font-mono">
+                                      /{phoneticTranscription}/
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                             {example && (
                               <div className="bg-gray-50 p-3 rounded border-l-2 border-green-300">
                                 <p className="text-xs text-gray-600 mb-1 font-medium">Example:</p>

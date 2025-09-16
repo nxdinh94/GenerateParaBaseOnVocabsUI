@@ -13,6 +13,8 @@ export interface GenerateParagraphRequest {
 export interface VocabMeaning {
   meaning: string;
   example: string;
+  phonetic_transcription: string;
+  part_of_speech: string;
 }
 
 export interface VocabExplanations {
@@ -85,7 +87,7 @@ export interface SavedParagraph {
 // UI-specific interfaces
 export interface ParagraphSettings {
   language: string;
-  length: 'short' | 'medium' | 'long' | 'custom';
+  length: 'short' | 'medium' | 'long' | 'sentence' | 'custom';
   customLength?: number;
   level: 'none' | 'beginner' | 'intermediate' | 'advanced';
   topic: string;

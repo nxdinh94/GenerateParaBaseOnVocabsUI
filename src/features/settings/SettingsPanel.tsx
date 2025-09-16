@@ -8,7 +8,7 @@ import { LocalStorageService } from '@/services/localStorageService';
 
 interface ParagraphSettings {
   language: string;
-  length: 'short' | 'medium' | 'long' | 'custom';
+  length: 'short' | 'medium' | 'long' | 'sentence' | 'custom';
   customLength?: number;
   level: 'beginner' | 'intermediate' | 'advanced';
   topic: string;
@@ -171,6 +171,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               { value: 'short', label: 'Short (<70 words)' },
               { value: 'medium', label: 'Medium (70-100 words)' },
               { value: 'long', label: 'Long (100-150 words)' },
+              { value: 'sentence', label: 'Sentence' },
               { value: 'custom', label: `Custom (${savedCustomLength})` }
             ].map(option => (
               <label key={option.value} className="flex items-center space-x-2">

@@ -30,7 +30,7 @@ interface GeneratedParagraph {
 
 interface ParagraphSettings {
   language: string;
-  length: 'short' | 'medium' | 'long' | 'custom';
+  length: 'short' | 'medium' | 'long' | 'sentence' | 'custom';
   customLength?: number;
   level: 'beginner' | 'intermediate' | 'advanced';
   topic: string;
