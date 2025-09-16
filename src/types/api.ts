@@ -11,10 +11,12 @@ export interface GenerateParagraphRequest {
 
 // API response from server - new structure with vocabulary explanations
 export interface VocabMeaning {
-  meaning: string;
-  example: string;
-  phonetic_transcription: string;
-  part_of_speech: string;
+  meaning?: string;
+  example?: string;
+  phonetic_transcription?: string;
+  part_of_speech?: string;
+  synonyms?: string[];
+  antonyms?: string[];
 }
 
 export interface VocabExplanations {

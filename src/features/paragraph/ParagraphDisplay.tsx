@@ -247,6 +247,8 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
               {Object.entries(explainVocabs).map(([vocab, meanings], index) => {
                 // Ensure meanings is an array
                 const meaningsArray = Array.isArray(meanings) ? meanings : [meanings];
+                // Get the first meaning object for basic vocab info (phonetic, part_of_speech, synonyms, antonyms)
+                const firstMeaning = meaningsArray.length > 0 && typeof meaningsArray[0] === 'object' ? meaningsArray[0] : null;
                 
                 return (
                   <div key={vocab} className="space-y-3">
@@ -261,44 +263,87 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
                       </div>
                       
                       {/* Hàng dưới: Part of speech và phonetic transcription */}
-                      {meaningsArray.length > 0 && typeof meaningsArray[0] === 'object' && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          {meaningsArray[0].part_of_speech && (
-                            <Badge variant="secondary" className="text-xs px-2 py-1">
-                              {meaningsArray[0].part_of_speech}
-                            </Badge>
-                          )}
-                          {meaningsArray[0].phonetic_transcription && (
-                            <span className="italic font-mono">
-                              {meaningsArray[0].phonetic_transcription}
-                            </span>
-                          )}
+                      {firstMeaning && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            {firstMeaning.part_of_speech && (
+                              <Badge variant="secondary" className="text-xs px-2 py-1">
+                                {firstMeaning.part_of_speech}
+                              </Badge>
+                            )}
+                            {firstMeaning.phonetic_transcription && (
+                              <span className="italic font-mono">
+                                {firstMeaning.phonetic_transcription}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Synonyms and Antonyms */}
+                          {(() => {
+                            // Filter out null, undefined, and empty strings
+                            const validSynonyms = firstMeaning.synonyms?.filter(s => s && s.trim() !== '') || [];
+                            const validAntonyms = firstMeaning.antonyms?.filter(a => a && a.trim() !== '') || [];
+                            
+                            return (validSynonyms.length > 0 || validAntonyms.length > 0) && (
+                              <div className="space-y-1 text-sm">
+                                {validSynonyms.length > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-green-600 font-medium text-xs">Synonyms:</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {validSynonyms.map((synonym, idx) => (
+                                        <Badge key={idx} variant="outline" className="text-xs text-green-700 border-green-300">
+                                          {synonym}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {validAntonyms.length > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-red-600 font-medium text-xs">Antonyms:</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {validAntonyms.map((antonym, idx) => (
+                                        <Badge key={idx} variant="outline" className="text-xs text-red-700 border-red-300">
+                                          {antonym}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
 
                     <div className="space-y-3 ml-4">
-                      {meaningsArray.map((meaningObj, meaningIndex) => {
-                        // Ensure meaningObj has the expected structure
-                        const meaning = typeof meaningObj === 'object' && meaningObj.meaning 
-                          ? meaningObj.meaning 
-                          : String(meaningObj);
-                        const example = typeof meaningObj === 'object' && meaningObj.example 
-                          ? meaningObj.example 
-                          : '';
-                        const partOfSpeech = typeof meaningObj === 'object' && meaningObj.part_of_speech 
-                          ? meaningObj.part_of_speech 
-                          : '';
-                        const phoneticTranscription = typeof meaningObj === 'object' && meaningObj.phonetic_transcription 
-                          ? meaningObj.phonetic_transcription 
-                          : '';
+                      {meaningsArray
+                        .filter((meaningObj) => {
+                          // Only show objects that have meaning (filter out basic vocab info objects)
+                          return typeof meaningObj === 'object' && meaningObj.meaning;
+                        })
+                        .map((meaningObj, meaningIndex) => {
+                          // Ensure meaningObj has the expected structure
+                          const meaning = typeof meaningObj === 'object' && meaningObj.meaning 
+                            ? meaningObj.meaning 
+                            : String(meaningObj);
+                          const example = typeof meaningObj === 'object' && meaningObj.example 
+                            ? meaningObj.example 
+                            : '';
+                          const partOfSpeech = typeof meaningObj === 'object' && meaningObj.part_of_speech 
+                            ? meaningObj.part_of_speech 
+                            : '';
+                          const phoneticTranscription = typeof meaningObj === 'object' && meaningObj.phonetic_transcription 
+                            ? meaningObj.phonetic_transcription 
+                            : '';
                           
-                        return (
-                          <div key={meaningIndex} className="border-l-2 border-gray-200 pl-4">
-                            <div className="flex items-start justify-between mb-2">
-                              <p className="text-gray-800 flex-1">
-                                <span className="font-semibold text-gray-600">{meaningIndex + 1}.</span> {meaning}
-                              </p>
+                          return (
+                            <div key={meaningIndex} className="border-l-2 border-gray-200 pl-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <p className="text-gray-800 flex-1">
+                                  <span className="font-semibold text-gray-600">{meaningIndex + 1}.</span> {meaning}
+                                </p>
                               {/* Show part of speech and phonetic for each meaning if different from first one */}
                               {meaningIndex > 0 && (partOfSpeech || phoneticTranscription) && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600 ml-2">
