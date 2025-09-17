@@ -39,8 +39,10 @@ export function formatVocabularyExplanations(
       formattedText += `   ${meaningIndex + 1}. ${meaningObj.meaning}\n\n`;
       
       // Clean up the example by removing markdown formatting
-      const cleanExample = meaningObj.example.replace(/\*\*(.*?)\*\*/g, '$1');
-      formattedText += `      💡 Example: ${cleanExample}\n\n`;
+      if (meaningObj.example) {
+        const cleanExample = meaningObj.example.replace(/\*\*(.*?)\*\*/g, '$1');
+        formattedText += `      💡 Example: ${cleanExample}\n\n`;
+      }
     });
   });
 

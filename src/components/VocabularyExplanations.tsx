@@ -51,12 +51,14 @@ export const VocabularyExplanations: React.FC<VocabularyExplanationsProps> = ({
                   <p className="text-sm text-gray-800 mb-2">
                     <span className="font-medium">{meaningIndex + 1}.</span> {meaningObj.meaning}
                   </p>
-                  <div className="bg-white p-2 rounded border">
-                    <p className="text-xs text-gray-600 mb-1 font-medium">Example:</p>
-                    <p className="text-sm text-gray-700" dangerouslySetInnerHTML={{ 
-                      __html: meaningObj.example.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-600">$1</strong>')
-                    }} />
-                  </div>
+                  {meaningObj.example && (
+                    <div className="bg-white p-2 rounded border">
+                      <p className="text-xs text-gray-600 mb-1 font-medium">Example:</p>
+                      <p className="text-sm text-gray-700" dangerouslySetInnerHTML={{ 
+                        __html: meaningObj.example.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-600">$1</strong>')
+                      }} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
