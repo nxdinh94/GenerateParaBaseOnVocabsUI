@@ -73,8 +73,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   const handleLoginSuccess = () => {
     refreshAuth();
-    // Redirect to home page and refresh to ensure clean state after login
-    window.location.href = '/';
+    // Redirect to paragraph page after login
+    navigate('/paragraph');
   };
 
   const handleLogout = async () => {
@@ -95,7 +95,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(isAuthenticated ? '/paragraph' : '/')}
             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
           >
             <BookOpen className="h-8 w-8 text-primary" />
@@ -134,6 +134,17 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col space-y-4 mt-6">
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => {
+                    navigate('/paragraph');
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  Generate Paragraph
+                </Button>
+                
                 <div className="flex items-center justify-between">
                   <span>Dark Mode</span>
                   <Switch checked={darkMode} onCheckedChange={setDarkMode} />
