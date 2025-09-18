@@ -15,8 +15,6 @@ export interface VocabMeaning {
   example?: string;
   phonetic_transcription?: string;
   part_of_speech?: string;
-  synonyms?: string[];
-  antonyms?: string[];
 }
 
 export interface VocabExplanations {

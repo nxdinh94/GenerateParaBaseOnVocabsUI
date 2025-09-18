@@ -247,7 +247,7 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
               {Object.entries(explainVocabs).map(([vocab, meanings], index) => {
                 // Ensure meanings is an array
                 const meaningsArray = Array.isArray(meanings) ? meanings : [meanings];
-                // Get the first meaning object for basic vocab info (phonetic, part_of_speech, synonyms, antonyms)
+                // Get the first meaning object for basic vocab info (phonetic, part_of_speech)
                 const firstMeaning = meaningsArray.length > 0 && typeof meaningsArray[0] === 'object' ? meaningsArray[0] : null;
                 
                 return (
@@ -277,42 +277,6 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
                               </span>
                             )}
                           </div>
-                          
-                          {/* Synonyms and Antonyms */}
-                          {(() => {
-                            // Filter out null, undefined, and empty strings
-                            const validSynonyms = firstMeaning.synonyms?.filter(s => s && s.trim() !== '') || [];
-                            const validAntonyms = firstMeaning.antonyms?.filter(a => a && a.trim() !== '') || [];
-                            
-                            return (validSynonyms.length > 0 || validAntonyms.length > 0) && (
-                              <div className="space-y-1 text-sm">
-                                {validSynonyms.length > 0 && (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-green-600 font-medium text-xs">Synonyms:</span>
-                                    <div className="flex flex-wrap gap-1">
-                                      {validSynonyms.map((synonym, idx) => (
-                                        <Badge key={idx} variant="outline" className="text-xs text-green-700 border-green-300">
-                                          {synonym}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {validAntonyms.length > 0 && (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-red-600 font-medium text-xs">Antonyms:</span>
-                                    <div className="flex flex-wrap gap-1">
-                                      {validAntonyms.map((antonym, idx) => (
-                                        <Badge key={idx} variant="outline" className="text-xs text-red-700 border-red-300">
-                                          {antonym}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
                         </div>
                       )}
                     </div>

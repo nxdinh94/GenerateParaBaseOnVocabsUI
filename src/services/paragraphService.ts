@@ -87,27 +87,21 @@ export class ParagraphService {
                   meaning: meaning, 
                   example: '',
                   phonetic_transcription: '',
-                  part_of_speech: '',
-                  synonyms: [],
-                  antonyms: []
+                  part_of_speech: ''
                 };
               } else if (typeof meaning === 'object' && meaning !== null) {
                 return {
                   meaning: meaning.meaning || '',
                   example: meaning.example || '',
                   phonetic_transcription: meaning.phonetic_transcription || '',
-                  part_of_speech: meaning.part_of_speech || '',
-                  synonyms: Array.isArray(meaning.synonyms) ? meaning.synonyms : [],
-                  antonyms: Array.isArray(meaning.antonyms) ? meaning.antonyms : []
+                  part_of_speech: meaning.part_of_speech || ''
                 };
               } else {
                 return { 
                   meaning: String(meaning), 
                   example: '',
                   phonetic_transcription: '',
-                  part_of_speech: '',
-                  synonyms: [],
-                  antonyms: []
+                  part_of_speech: ''
                 };
               }
             });
