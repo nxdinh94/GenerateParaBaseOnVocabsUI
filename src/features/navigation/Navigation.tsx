@@ -95,7 +95,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button 
-            onClick={() => navigate(isAuthenticated ? '/paragraph' : '/')}
+            onClick={() => navigate('/')}
             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
           >
             <BookOpen className="h-8 w-8 text-primary" />

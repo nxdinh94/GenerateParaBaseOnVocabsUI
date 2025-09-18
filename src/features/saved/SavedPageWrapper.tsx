@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { SavedPage } from './SavedPage';
 import { paragraphController } from '@/controllers/paragraphController';
 import { mapApiGroupArrayToUI, type GroupedParagraphs } from '@/lib/dataMappers';
@@ -8,7 +8,44 @@ export const SavedPageWrapper: React.FC = () => {
   const [groupedParagraphs, setGroupedParagraphs] = useState<GroupedParagraphs[]>([]);
   const [isLoadingSavedParagraphs, setIsLoadingSavedParagraphs] = useState(false);
   const [savedParagraphsError, setSavedParagraphsError] = useState<string | null>(null);
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchType, setSearchType] = useState<'all' | 'vocabs' | 'content'>('all');
+  
   const { toast } = useToast();
+
+  // Search filtering logic
+  const filteredGroupedParagraphs = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return groupedParagraphs;
+    }
+
+    const lowercaseSearchTerm = searchTerm.toLowerCase();
+
+    return groupedParagraphs.filter((group) => {
+      switch (searchType) {
+        case 'vocabs':
+          return group.vocabularies.some(vocab => 
+            vocab.toLowerCase().includes(lowercaseSearchTerm)
+          );
+        case 'content':
+          return group.paragraphs.some(paragraph => 
+            paragraph.toLowerCase().includes(lowercaseSearchTerm)
+          );
+        case 'all':
+        default:
+          return (
+            group.vocabularies.some(vocab => 
+              vocab.toLowerCase().includes(lowercaseSearchTerm)
+            ) ||
+            group.paragraphs.some(paragraph => 
+              paragraph.toLowerCase().includes(lowercaseSearchTerm)
+            )
+          );
+      }
+    });
+  }, [groupedParagraphs, searchTerm, searchType]);
 
   const loadSavedParagraphs = useCallback(async () => {
     setIsLoadingSavedParagraphs(true);
@@ -62,11 +99,17 @@ export const SavedPageWrapper: React.FC = () => {
 
   return (
     <SavedPage
-      groupedParagraphs={groupedParagraphs}
+      groupedParagraphs={filteredGroupedParagraphs}
       isLoadingSavedParagraphs={isLoadingSavedParagraphs}
       savedParagraphsError={savedParagraphsError}
       loadSavedParagraphs={loadSavedParagraphs}
       deleteSavedParagraph={deleteSavedParagraph}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      searchType={searchType}
+      setSearchType={setSearchType}
+      totalResults={groupedParagraphs.length}
+      filteredResults={filteredGroupedParagraphs.length}
     />
   );
 };
