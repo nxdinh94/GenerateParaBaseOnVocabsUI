@@ -21,7 +21,7 @@ export class VocabSuggestionsService {
 
       console.log('🔄 Fetching unique vocabularies from API...');
       
-      const response = await apiClient.get<UniqueVocabsApiResponse>('/unique-vocabs?sort=frequent');
+      const response = await apiClient.get<UniqueVocabsApiResponse>('/vocabs_base_on_category?sort=frequent');
       
       if (response.data && response.data.status) {
         // Extract all vocabularies from documents with their IDs
