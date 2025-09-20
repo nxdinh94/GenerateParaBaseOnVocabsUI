@@ -7,18 +7,28 @@ interface TagInputProps {
   onChange: (tags: string[]) => void;
   placeholder?: string;
   suggestions?: string[];
+  suggestionData?: { vocab: string; id?: string }[]; // Alternative with ID data
+  onRemoveSuggestion?: (suggestion: string, id?: string) => void;
 }
 
 export const TagInput: React.FC<TagInputProps> = ({ 
   value, 
   onChange, 
   placeholder, 
-  suggestions = []
+  suggestions = [],
+  suggestionData = [],
+  onRemoveSuggestion
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [hoveredSuggestion, setHoveredSuggestion] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Use suggestionData if provided, otherwise fallback to suggestions array
+  const suggestionItems = suggestionData.length > 0 
+    ? suggestionData 
+    : suggestions.map(s => ({ vocab: s, id: undefined }));
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -46,6 +56,13 @@ export const TagInput: React.FC<TagInputProps> = ({
     onChange(value.filter((_, i) => i !== index));
   };
 
+  const handleRemoveSuggestion = (e: React.MouseEvent, suggestionItem: { vocab: string; id?: string }) => {
+    e.stopPropagation(); // Prevent adding the tag when clicking X
+    if (onRemoveSuggestion) {
+      onRemoveSuggestion(suggestionItem.vocab, suggestionItem.id);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
@@ -55,14 +72,14 @@ export const TagInput: React.FC<TagInputProps> = ({
     }
   };
 
-  const filteredSuggestions = suggestions.filter(
-    s => {
+  const filteredSuggestions = suggestionItems.filter(
+    item => {
       // If no input, show all suggestions that aren't already selected
       if (!inputValue.trim()) {
-        return !value.includes(s);
+        return !value.includes(item.vocab);
       }
       // If there's input, filter by input and exclude already selected
-      return s.toLowerCase().includes(inputValue.toLowerCase()) && !value.includes(s);
+      return item.vocab.toLowerCase().includes(inputValue.toLowerCase()) && !value.includes(item.vocab);
     }
   );
 
@@ -96,14 +113,29 @@ export const TagInput: React.FC<TagInputProps> = ({
       
       {showSuggestions && filteredSuggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {filteredSuggestions.slice(0, 50).map((suggestion, index) => (
-            <button
+          {filteredSuggestions.slice(0, 50).map((suggestionItem, index) => (
+            <div
               key={index}
-              onClick={() => addTag(suggestion)}
-              className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground text-sm flex items-center justify-between"
+              className="relative group"
+              onMouseEnter={() => setHoveredSuggestion(suggestionItem.vocab)}
+              onMouseLeave={() => setHoveredSuggestion(null)}
             >
-              <span>{suggestion}</span>
-            </button>
+              <button
+                onClick={() => addTag(suggestionItem.vocab)}
+                className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground text-sm flex items-center justify-between"
+              >
+                <span>{suggestionItem.vocab}</span>
+                {hoveredSuggestion === suggestionItem.vocab && onRemoveSuggestion && (
+                  <button
+                    onClick={(e) => handleRemoveSuggestion(e, suggestionItem)}
+                    className="ml-2 p-1 hover:bg-destructive/20 rounded-full text-muted-foreground hover:text-destructive transition-colors"
+                    title={`Remove ${suggestionItem.vocab} from suggestions`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </button>
+            </div>
           ))}
           {filteredSuggestions.length > 50 && (
             <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border">

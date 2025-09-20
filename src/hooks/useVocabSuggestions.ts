@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { VocabSuggestionsService } from '../services/vocabSuggestionsService';
+import { learnedVocabService } from '../services/learnedVocabService';
 import { vocabRefreshEventEmitter } from '../utils/vocabRefreshEvents';
 import { UserApiService } from '../services/userApiService';
-import type { VocabFrequency } from '../types/api';
+import { useToast } from './use-toast';
+import type { VocabFrequency, VocabDocument } from '../types/api';
 
 /**
  * Custom hook for managing vocabulary suggestions from API
  */
 export const useVocabSuggestions = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestionData, setSuggestionData] = useState<{ vocab: string; id?: string }[]>([]);
+  const [documents, setDocuments] = useState<VocabDocument[]>([]);
   const [frequencyData, setFrequencyData] = useState<VocabFrequency[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const loadSuggestions = async () => {
     // Check authentication before making API call
@@ -31,10 +36,21 @@ export const useVocabSuggestions = () => {
       const response = await VocabSuggestionsService.getUniqueVocabs();
       
       if (response.success && response.data) {
-        const vocabSuggestions = response.data.frequencyData.map(item => item.vocab);
+        const vocabSuggestions = response.data.uniqueVocabs;
+        const vocabSuggestionData = response.data.frequencyData.map(item => ({
+          vocab: item.vocab,
+          id: item.id
+        }));
+        
         setSuggestions(vocabSuggestions);
+        setSuggestionData(vocabSuggestionData);
+        setDocuments(response.data.documents);
         setFrequencyData(response.data.frequencyData);
-        console.log('✅ Vocabulary suggestions loaded for TagInput:', vocabSuggestions.length);
+        
+        console.log('✅ Vocabulary suggestions loaded for TagInput:', {
+          suggestions: vocabSuggestions.length,
+          withIds: vocabSuggestionData.filter(item => item.id).length
+        });
       } else {
         throw new Error(response.error || 'Failed to load vocabulary suggestions');
       }
@@ -45,9 +61,51 @@ export const useVocabSuggestions = () => {
       
       // No fallback - keep suggestions empty if API fails
       setSuggestions([]);
+      setSuggestionData([]);
+      setDocuments([]);
       setFrequencyData([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const removeSuggestion = async (vocab: string, _id?: string) => {
+    // Optimistic UI - remove immediately from state
+    const originalSuggestions = [...suggestions];
+    const originalSuggestionData = [...suggestionData];
+    
+    // Remove from UI immediately
+    setSuggestions(prev => prev.filter(v => v !== vocab));
+    setSuggestionData(prev => prev.filter(item => item.vocab !== vocab));
+    
+    try {
+      // Call API to mark as learned
+      const response = await learnedVocabService.removeLearnedVocabulary(vocab);
+      
+      if (response.success) {
+        toast({
+          title: "Vocabulary removed",
+          description: `"${vocab}" has been removed from suggestions`,
+        });
+        
+        // Refresh data to get the latest from server
+        await loadSuggestions();
+      } else {
+        throw new Error(response.error || 'Failed to remove vocabulary');
+      }
+    } catch (error) {
+      // Revert optimistic changes on error
+      setSuggestions(originalSuggestions);
+      setSuggestionData(originalSuggestionData);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove vocabulary';
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+      
+      console.error('❌ Error removing vocabulary suggestion:', error);
     }
   };
 
@@ -73,9 +131,12 @@ export const useVocabSuggestions = () => {
 
   return {
     suggestions,
+    suggestionData,
+    documents,
     frequencyData,
     isLoading,
     error,
-    reload: loadSuggestions
+    reload: loadSuggestions,
+    removeSuggestion
   };
 };

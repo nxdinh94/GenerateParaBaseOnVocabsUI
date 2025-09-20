@@ -22,7 +22,7 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vocabData, setVocabData] = useState<{
-    totalUnique: number;
+    totalDocuments: number;
     frequencyData: VocabFrequency[];
     message: string;
   } | null>(null);
@@ -118,7 +118,7 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
       {vocabData && !isLoading && (
         <div className="mb-4 p-3 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium">{vocabData.totalUnique}</span> unique vocabularies found
+            <span className="font-medium">{vocabData.totalDocuments}</span> unique vocabularies found
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {vocabData.message}

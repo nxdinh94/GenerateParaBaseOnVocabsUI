@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Save, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Save, Edit3, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,7 @@ interface ParagraphDisplayProps {
   isSaving?: boolean;
   explainVocabs?: VocabExplanations;
   explanationInParagraph?: ExplanationInParagraph;
+  onRemoveVocabulary?: (vocabulary: string) => void;
 }
 
 export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
@@ -29,7 +30,8 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
   isSaved = false,
   isSaving = false,
   explainVocabs,
-  explanationInParagraph
+  explanationInParagraph,
+  onRemoveVocabulary
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -255,11 +257,22 @@ export const ParagraphDisplay: React.FC<ParagraphDisplayProps> = ({
                     {index > 0 && <Separator className="my-4" />}
                     
                     <div className="flex flex-col gap-2">
-                      {/* Hàng trên: Từ vựng */}
-                      <div>
+                      {/* Hàng trên: Từ vựng với nút xóa */}
+                      <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-base font-bold px-3 py-1">
                           {vocab}
                         </Badge>
+                        {onRemoveVocabulary && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onRemoveVocabulary(vocab)}
+                            className="h-6 w-6 p-0 hover:bg-destructive/20 hover:text-destructive"
+                            title={`Remove ${vocab} from learned vocabularies`}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                       
                       {/* Hàng dưới: Part of speech và phonetic transcription */}

@@ -10,6 +10,7 @@ interface MainWorkspaceProps {
   vocabularies: string[];
   setVocabularies: (vocabularies: string[]) => void;
   vocabularySuggestions: string[];
+  vocabularySuggestionData?: { vocab: string; id?: string }[];
   generateParagraph: () => void;
   isLoading: boolean;
   getRandomFromHistory: () => void;
@@ -21,12 +22,15 @@ interface MainWorkspaceProps {
   isSaving?: boolean;
   explainVocabs?: VocabExplanations;
   explanationInParagraph?: ExplanationInParagraph;
+  onRemoveVocabulary?: (vocabulary: string) => void;
+  onRemoveSuggestion?: (suggestion: string, id?: string) => void;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   vocabularies,
   setVocabularies,
   vocabularySuggestions,
+  vocabularySuggestionData,
   generateParagraph,
   isLoading,
   getRandomFromHistory,
@@ -37,7 +41,9 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   isSaved,
   isSaving,
   explainVocabs,
-  explanationInParagraph
+  explanationInParagraph,
+  onRemoveVocabulary,
+  onRemoveSuggestion
 }) => {
   return (
     <div className="space-y-6">
@@ -49,6 +55,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
           onChange={setVocabularies}
           placeholder="Type vocabularies and press Enter or comma..."
           suggestions={vocabularySuggestions}
+          suggestionData={vocabularySuggestionData}
+          onRemoveSuggestion={onRemoveSuggestion}
         />
         <p className="text-sm text-muted-foreground mt-2">
           Press Ctrl+Enter to generate paragraph
@@ -85,6 +93,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         isSaving={isSaving}
         explainVocabs={explainVocabs}
         explanationInParagraph={explanationInParagraph}
+        onRemoveVocabulary={onRemoveVocabulary}
       />
     </div>
   );

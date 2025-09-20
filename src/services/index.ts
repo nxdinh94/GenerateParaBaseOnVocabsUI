@@ -4,8 +4,10 @@ export { ApiService } from './apiService';
 export { UserApiService } from './userApiService';
 export { VocabSuggestionsService } from './vocabSuggestionsService';
 export { InputHistoryService, inputHistoryService } from './inputHistoryService';
+export { LearnedVocabService, learnedVocabService } from './learnedVocabService';
 
 // Export types
 export type { GenerateParagraphRequest, GenerateParagraphResponse } from './apiService';
 export type { User, LoginRequest, LoginResponse } from './userApiService';
 export type { VocabSuggestionsResponse, VocabFrequency, InputHistoryRequest, InputHistoryResponse } from '../types/api';
+export type { LearnedVocabRequest, LearnedVocabResponse } from './learnedVocabService';

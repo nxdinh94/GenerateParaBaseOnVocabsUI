@@ -1,12 +1,12 @@
 // Service for handling vocabulary suggestions API calls
 import { apiClient, handleApiError } from './apiClient';
 import { UserApiService } from './userApiService';
-import type { VocabSuggestionsApiResponse, VocabSuggestionsResponse } from '../types/api';
+import type { UniqueVocabsApiResponse, VocabSuggestionsResponse, VocabFrequency, VocabDocument } from '../types/api';
 
 export class VocabSuggestionsService {
   /**
-   * Get unique vocabularies from server with frequency data
-   * Sorted by frequency (highest to lowest)
+   * Get unique vocabularies from server with document data
+   * Sorted by newest (default sort method from API)
    */
   static async getUniqueVocabs(): Promise<VocabSuggestionsResponse> {
     try {
@@ -21,23 +21,39 @@ export class VocabSuggestionsService {
 
       console.log('🔄 Fetching unique vocabularies from API...');
       
-      const response = await apiClient.get<VocabSuggestionsApiResponse>('/unique-vocabs');
+      const response = await apiClient.get<UniqueVocabsApiResponse>('/unique-vocabs?sort=frequent');
       
       if (response.data && response.data.status) {
-        // Sort frequency_data by frequency (highest to lowest)
-        const sortedFrequencyData = response.data.frequency_data.sort((a, b) => b.frequency - a.frequency);
+        // Extract all vocabularies from documents with their IDs
+        const frequencyData: VocabFrequency[] = [];
+        const uniqueVocabs: string[] = [];
+        
+        response.data.documents.forEach((doc: VocabDocument) => {
+          doc.vocabs.forEach((vocab: string) => {
+            if (!uniqueVocabs.includes(vocab)) {
+              uniqueVocabs.push(vocab);
+              frequencyData.push({
+                id: doc.id,
+                vocab: vocab,
+                frequency: 1 // Set frequency to 1 since the new API doesn't provide frequency
+              });
+            }
+          });
+        });
         
         console.log('✅ Successfully fetched unique vocabularies:', {
-          total: response.data.total_unique,
+          total: response.data.total_documents,
+          uniqueVocabs: uniqueVocabs.length,
           message: response.data.message
         });
         
         return {
           success: true,
           data: {
-            totalUnique: response.data.total_unique,
-            uniqueVocabs: response.data.unique_vocabs,
-            frequencyData: sortedFrequencyData, // Already sorted by frequency
+            totalDocuments: response.data.total_documents,
+            documents: response.data.documents,
+            uniqueVocabs: uniqueVocabs,
+            frequencyData: frequencyData,
             message: response.data.message
           }
         };
@@ -60,16 +76,19 @@ export class VocabSuggestionsService {
   }
 
   /**
-   * Get vocabulary suggestions sorted by frequency
-   * Returns array of vocab strings sorted by usage frequency
+   * Get vocabulary suggestions sorted by document creation date (newest first)
+   * Returns array of vocab strings with their IDs
    */
-  static async getVocabSuggestionsSorted(): Promise<string[]> {
+  static async getVocabSuggestionsSorted(): Promise<{ vocab: string; id: string }[]> {
     try {
       const response = await this.getUniqueVocabs();
       
       if (response.success && response.data) {
-        // Extract vocab names from frequency data (already sorted by frequency)
-        return response.data.frequencyData.map(item => item.vocab);
+        // Return vocab suggestions with their IDs from frequency data
+        return response.data.frequencyData.map(item => ({
+          vocab: item.vocab,
+          id: item.id || ''
+        }));
       } else {
         console.warn('⚠️ Failed to fetch vocabulary suggestions, using empty array');
         return [];
@@ -81,23 +100,21 @@ export class VocabSuggestionsService {
   }
 
   /**
-   * Get top N most frequent vocabularies
+   * Get top N most recent vocabularies
    */
-  static async getTopFrequentVocabs(limit: number = 10): Promise<string[]> {
+  static async getTopRecentVocabs(limit: number = 10): Promise<string[]> {
     try {
       const response = await this.getUniqueVocabs();
       
       if (response.success && response.data) {
-        // Take top N vocabularies by frequency
-        return response.data.frequencyData
-          .slice(0, limit)
-          .map(item => item.vocab);
+        // Take top N vocabularies (already sorted by newest from API)
+        return response.data.uniqueVocabs.slice(0, limit);
       } else {
-        console.warn('⚠️ Failed to fetch top frequent vocabularies, using empty array');
+        console.warn('⚠️ Failed to fetch top recent vocabularies, using empty array');
         return [];
       }
     } catch (error) {
-      console.error('❌ Error getting top frequent vocabularies:', error);
+      console.error('❌ Error getting top recent vocabularies:', error);
       return [];
     }
   }

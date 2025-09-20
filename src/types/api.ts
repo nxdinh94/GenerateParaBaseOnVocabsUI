@@ -111,10 +111,31 @@ export interface ApiError {
 
 // Vocab suggestions interfaces
 export interface VocabFrequency {
+  id?: string; // Add optional ID for deleting vocabularies
   vocab: string;
   frequency: number;
 }
 
+// New interface for unique-vocabs API response
+export interface VocabDocument {
+  id: string;
+  vocabs: string[];
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  is_deleted: boolean;
+}
+
+export interface UniqueVocabsApiResponse {
+  status: boolean;
+  total_documents: number;
+  documents: VocabDocument[];
+  sort: VocabDocument[];
+  sort_method: string;
+  message: string;
+}
+
+// Legacy interface for backward compatibility
 export interface VocabSuggestionsApiResponse {
   status: boolean;
   total_unique: number;
@@ -126,7 +147,8 @@ export interface VocabSuggestionsApiResponse {
 export interface VocabSuggestionsResponse {
   success: boolean;
   data?: {
-    totalUnique: number;
+    totalDocuments: number;
+    documents: VocabDocument[];
     uniqueVocabs: string[];
     frequencyData: VocabFrequency[];
     message: string;

@@ -4,6 +4,7 @@ import { LocalStorageService, type UserSettings } from '@/services/localStorageS
 import { mapUIToApiRequest } from '@/lib/dataMappers';
 import { useVocabSuggestions } from '@/hooks/useVocabSuggestions';
 import { useAuth } from '@/hooks/useAuth';
+import { learnedVocabService } from '@/services/learnedVocabService';
 
 // Feature components
 import { SettingsPanel } from '@/features/settings/SettingsPanel';
@@ -85,7 +86,11 @@ export const ParagraphGeneratorPage: React.FC = () => {
   });
 
   // Use vocabulary suggestions hook
-  const { suggestions: vocabularySuggestions } = useVocabSuggestions();
+  const { 
+    suggestions: vocabularySuggestions, 
+    suggestionData: vocabularySuggestionData,
+    removeSuggestion 
+  } = useVocabSuggestions();
 
   // Use authentication hook
   const { isAuthenticated } = useAuth();
@@ -142,6 +147,24 @@ export const ParagraphGeneratorPage: React.FC = () => {
         setCurrentExplanationInParagraph(response.data.explanationInParagraph);
         setHistory(prev => [newParagraph, ...prev]);
         setIsSaved(false); // Reset save state for new paragraph
+
+        // Call learned-vocabs API after successful paragraph generation
+        if (isAuthenticated && vocabularies.length > 0) {
+          try {
+            console.log('📚 Calling learned-vocabs API for vocabularies:', vocabularies);
+            const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(vocabularies);
+            
+            if (learnedResponse.success) {
+              console.log('✅ Successfully marked vocabularies as learned');
+            } else {
+              console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+            }
+          } catch (learnedError) {
+            console.error('❌ Error calling learned-vocabs API:', learnedError);
+          }
+        } else {
+          console.log('ℹ️ Skipping learned-vocabs API call - user not authenticated or no vocabularies');
+        }
       } else {
         // Handle API error
         const errorMessage = response.error || 'Failed to generate paragraph';
@@ -307,6 +330,64 @@ export const ParagraphGeneratorPage: React.FC = () => {
     console.log('📝 Paragraph content updated from edit');
   }, []);
 
+  const handleRemoveVocabulary = useCallback(async (vocabulary: string) => {
+    console.log('🗑️ Removing vocabulary from learned list:', vocabulary);
+    
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Cần đăng nhập",
+        description: "Bạn cần đăng nhập để sử dụng tính năng này",
+      });
+      return;
+    }
+
+    try {
+      const response = await learnedVocabService.removeLearnedVocabulary(vocabulary);
+      
+      if (response.success) {
+        console.log('✅ Successfully removed vocabulary from learned list');
+        toast({
+          variant: "default",
+          title: "Đã xóa thành công",
+          description: `Đã xóa "${vocabulary}" khỏi danh sách từ vựng đã học`,
+        });
+      } else {
+        console.error('❌ Failed to remove vocabulary:', response.error);
+        toast({
+          variant: "destructive",
+          title: "Xóa thất bại",
+          description: response.error || "Không thể xóa từ vựng",
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error removing vocabulary:', error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi mạng",
+        description: error instanceof Error ? error.message : 'Không thể kết nối đến server',
+      });
+    }
+  }, [isAuthenticated, toast]);
+
+  const handleRemoveSuggestion = useCallback(async (suggestion: string, id?: string) => {
+    console.log('🗑️ Removing suggestion from learned vocabs:', { suggestion, id });
+    
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Cần đăng nhập",
+        description: "Bạn cần đăng nhập để sử dụng tính năng này",
+      });
+      return;
+    }
+
+    // Use the optimistic UI function from the hook
+    await removeSuggestion(suggestion, id);
+  }, [isAuthenticated, toast, removeSuggestion]);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="grid lg:grid-cols-4 gap-8">
@@ -315,6 +396,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
             vocabularies={vocabularies}
             setVocabularies={setVocabularies}
             vocabularySuggestions={vocabularySuggestions}
+            vocabularySuggestionData={vocabularySuggestionData}
             generateParagraph={generateParagraph}
             isLoading={isLoading}
             getRandomFromHistory={getRandomFromHistory}
@@ -326,6 +408,8 @@ export const ParagraphGeneratorPage: React.FC = () => {
             isSaving={isSaving}
             explainVocabs={currentExplainVocabs}
             explanationInParagraph={currentExplanationInParagraph}
+            onRemoveVocabulary={handleRemoveVocabulary}
+            onRemoveSuggestion={handleRemoveSuggestion}
           />
         </div>
         <div className="lg:col-span-1">

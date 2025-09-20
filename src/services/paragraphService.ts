@@ -24,10 +24,51 @@ export class ParagraphService {
       });
       
       // The response.data should contain the API response
-      const apiResponse = response.data as unknown as ApiParagraphResponse;
+      const apiResponse: any = response.data;
+      
+      console.log('🔍 ParagraphService: Raw API response:', apiResponse);
+      console.log('🔍 ParagraphService: Response type:', typeof apiResponse);
+      
+      // Check if the response is the direct format
+      if (apiResponse && typeof apiResponse === 'object') {
+        // Direct response format: {paragraph: '...', explain_vocabs: {...}, explanation_in_paragraph: {...}}
+        if (apiResponse.paragraph && typeof apiResponse.paragraph === 'string') {
+          console.log('✨ ParagraphService: Direct response format detected');
+          console.log('📄 Paragraph:', apiResponse.paragraph);
+          console.log('📚 Raw explain_vocabs:', apiResponse.explain_vocabs);
+          console.log('💡 Raw explanation_in_paragraph:', apiResponse.explanation_in_paragraph);
+          
+          return {
+            success: true,
+            data: {
+              paragraph: apiResponse.paragraph,
+              message: 'Paragraph generated successfully',
+              explainVocabs: apiResponse.explain_vocabs,
+              explanationInParagraph: apiResponse.explanation_in_paragraph
+            }
+          };
+        }
+        
+        // Check for wrapped response format: {status: true, paragraph: '...', explain_vocabs: {...}, explanation_in_paragraph: {...}}
+        if (apiResponse.status && apiResponse.paragraph) {
+          console.log('✨ ParagraphService: Wrapped response format detected');
+          return {
+            success: true,
+            data: {
+              paragraph: apiResponse.paragraph,
+              message: 'Paragraph generated successfully',
+              explainVocabs: apiResponse.explain_vocabs,
+              explanationInParagraph: apiResponse.explanation_in_paragraph
+            }
+          };
+        }
+      }
+      
+      // Fallback to original handling for backward compatibility
+      const apiResponseTyped = apiResponse as ApiParagraphResponse;
       
       // Map the API response to our expected format with vocabulary highlighting
-      return this.mapApiResponse(apiResponse, requestData.vocabularies);
+      return this.mapApiResponse(apiResponseTyped, requestData.vocabularies);
     } catch (error) {
       console.error('ParagraphService: Generate paragraph failed:', error);
       
