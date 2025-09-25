@@ -14,7 +14,6 @@ interface MainWorkspaceProps {
   generateParagraph: () => void;
   isLoading: boolean;
   getRandomFromHistory: () => void;
-  historyLength: number;
   currentParagraph: string;
   saveParagraph: () => void;
   onEditSave?: (editedContent: string) => void;
@@ -34,7 +33,6 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   generateParagraph,
   isLoading,
   getRandomFromHistory,
-  historyLength,
   currentParagraph,
   saveParagraph,
   onEditSave,
@@ -75,11 +73,11 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         <Button
           variant="outline"
           onClick={getRandomFromHistory}
-          disabled={historyLength === 0}
+          disabled={vocabularySuggestions.length === 0 || isLoading}
           className="flex-1"
         >
           <Shuffle className="h-4 w-4 mr-2" />
-          Random from History
+          Random Vocabulary
         </Button>
       </div>
 

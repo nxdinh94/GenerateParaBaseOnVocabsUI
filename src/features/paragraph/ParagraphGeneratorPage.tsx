@@ -73,7 +73,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   
   // Load saved data from localStorage for history, but saved paragraphs will come from API
-  const [history, setHistory] = useState<GeneratedParagraph[]>(() => {
+  const [_history, setHistory] = useState<GeneratedParagraph[]>(() => {
     const savedHistory = LocalStorageService.getParagraphHistory();
     return savedHistory.map(item => ({
       id: item.id,
@@ -261,14 +261,104 @@ export const ParagraphGeneratorPage: React.FC = () => {
     }
   };
 
-  const getRandomFromHistory = () => {
-    if (history.length === 0) return;
-    const randomParagraph = history[Math.floor(Math.random() * history.length)];
-    setCurrentParagraph(randomParagraph.content);
-    setVocabularies(randomParagraph.vocabularies);
-    setSettings(randomParagraph.settings);
-    setIsSaved(false); // Reset save state when loading from history
-  };
+  const getRandomFromHistory = useCallback(async () => {
+    // Check if we have vocabulary suggestions available
+    if (vocabularySuggestions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No suggestions available",
+        description: "Please wait for vocabulary suggestions to load",
+      });
+      return;
+    }
+
+    // Randomly select up to 3 vocabularies from suggestions
+    const maxVocabs = Math.min(3, vocabularySuggestions.length);
+    const shuffled = [...vocabularySuggestions].sort(() => 0.5 - Math.random());
+    const randomVocabs = shuffled.slice(0, maxVocabs);
+    
+    console.log(`🎲 Random vocabularies selected: ${randomVocabs.join(', ')} (${randomVocabs.length}/${vocabularySuggestions.length} available)`);
+    
+    // Don't update the vocabulary input field - call API directly
+    setIsLoading(true);
+    
+    try {
+      // Call the API directly with random vocabularies without updating UI
+      const response = await paragraphController.generateParagraph(randomVocabs, settings);
+      console.log('API Request:', { vocabularies: randomVocabs, settings });
+      console.log('API Response:', response);
+
+      if (response.success && response.data) {
+        const generatedContent = response.data.paragraph;
+        
+        const newParagraph: GeneratedParagraph = {
+          id: Date.now().toString(),
+          content: generatedContent,
+          vocabularies: [...randomVocabs],
+          settings: { ...settings },
+          timestamp: new Date(),
+          saved: false
+        };
+        
+        setCurrentParagraph(generatedContent);
+        
+        // Set explanations but without highlighting (no explanationInParagraph)
+        setCurrentExplainVocabs(response.data.explainVocabs);
+        setCurrentExplanationInParagraph(undefined); // Don't show highlights
+        setHistory(prev => [newParagraph, ...prev]);
+        setIsSaved(false); // Reset save state for new paragraph
+
+        // Call learned-vocabs API after successful paragraph generation
+        if (isAuthenticated && randomVocabs.length > 0) {
+          try {
+            console.log('📚 Calling learned-vocabs API for vocabularies:', randomVocabs);
+            const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(randomVocabs);
+            
+            if (learnedResponse.success) {
+              console.log('✅ Successfully marked vocabularies as learned');
+            } else {
+              console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+            }
+          } catch (learnedError) {
+            console.error('❌ Error calling learned-vocabs API:', learnedError);
+          }
+        } else {
+          console.log('ℹ️ Skipping learned-vocabs API call - user not authenticated or no vocabularies');
+        }
+      } else {
+        // Handle API error
+        const errorMessage = response.error || 'Failed to generate paragraph';
+        console.error('API Error:', errorMessage);
+        
+        // Show error toast
+        toast({
+          variant: "destructive",
+          title: "Tạo thất bại",
+          description: errorMessage,
+        });
+        
+        // Show error in the paragraph field
+        setCurrentParagraph(`Error: ${errorMessage}`);
+        setCurrentExplainVocabs(undefined);
+        setCurrentExplanationInParagraph(undefined);
+      }
+    } catch (error) {
+      console.error('Network Error:', error);
+      
+      // Show error toast
+      toast({
+        variant: "destructive",
+        title: "Lỗi mạng",
+        description: error instanceof Error ? error.message : 'Không thể kết nối đến server',
+      });
+      
+      setCurrentParagraph(`Network Error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`);
+      setCurrentExplainVocabs(undefined);
+      setCurrentExplanationInParagraph(undefined);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [vocabularySuggestions, settings, toast, isAuthenticated]);
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'Enter') {
@@ -400,7 +490,6 @@ export const ParagraphGeneratorPage: React.FC = () => {
             generateParagraph={generateParagraph}
             isLoading={isLoading}
             getRandomFromHistory={getRandomFromHistory}
-            historyLength={history.length}
             currentParagraph={currentParagraph}
             saveParagraph={saveParagraph}
             onEditSave={handleEditSave}
