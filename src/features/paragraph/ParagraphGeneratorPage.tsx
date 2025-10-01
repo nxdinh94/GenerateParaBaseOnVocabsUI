@@ -420,46 +420,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
     console.log('📝 Paragraph content updated from edit');
   }, []);
 
-  const handleRemoveVocabulary = useCallback(async (vocabulary: string) => {
-    console.log('🗑️ Removing vocabulary from learned list:', vocabulary);
-    
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      toast({
-        variant: "destructive",
-        title: "Cần đăng nhập",
-        description: "Bạn cần đăng nhập để sử dụng tính năng này",
-      });
-      return;
-    }
 
-    try {
-      const response = await learnedVocabService.removeLearnedVocabulary(vocabulary);
-      
-      if (response.success) {
-        console.log('✅ Successfully removed vocabulary from learned list');
-        toast({
-          variant: "default",
-          title: "Đã xóa thành công",
-          description: `Đã xóa "${vocabulary}" khỏi danh sách từ vựng đã học`,
-        });
-      } else {
-        console.error('❌ Failed to remove vocabulary:', response.error);
-        toast({
-          variant: "destructive",
-          title: "Xóa thất bại",
-          description: response.error || "Không thể xóa từ vựng",
-        });
-      }
-    } catch (error) {
-      console.error('❌ Error removing vocabulary:', error);
-      toast({
-        variant: "destructive",
-        title: "Lỗi mạng",
-        description: error instanceof Error ? error.message : 'Không thể kết nối đến server',
-      });
-    }
-  }, [isAuthenticated, toast]);
 
   const handleRemoveSuggestion = useCallback(async (suggestion: string, id?: string) => {
     console.log('🗑️ Removing suggestion from learned vocabs:', { suggestion, id });
@@ -497,7 +458,6 @@ export const ParagraphGeneratorPage: React.FC = () => {
             isSaving={isSaving}
             explainVocabs={currentExplainVocabs}
             explanationInParagraph={currentExplanationInParagraph}
-            onRemoveVocabulary={handleRemoveVocabulary}
             onRemoveSuggestion={handleRemoveSuggestion}
           />
         </div>

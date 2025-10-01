@@ -339,7 +339,6 @@ const VocabularyLearningWebsite: React.FC = () => {
               generateParagraph={generateParagraph}
               isLoading={isLoading}
               getRandomFromHistory={getRandomFromHistory}
-              historyLength={history.length}
               currentParagraph={currentParagraph}
               saveParagraph={saveParagraph}
               onEditSave={handleEditSave}

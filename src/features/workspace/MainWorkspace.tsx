@@ -21,7 +21,6 @@ interface MainWorkspaceProps {
   isSaving?: boolean;
   explainVocabs?: VocabExplanations;
   explanationInParagraph?: ExplanationInParagraph;
-  onRemoveVocabulary?: (vocabulary: string) => void;
   onRemoveSuggestion?: (suggestion: string, id?: string) => void;
 }
 
@@ -40,7 +39,6 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   isSaving,
   explainVocabs,
   explanationInParagraph,
-  onRemoveVocabulary,
   onRemoveSuggestion
 }) => {
   return (
@@ -91,7 +89,6 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
         isSaving={isSaving}
         explainVocabs={explainVocabs}
         explanationInParagraph={explanationInParagraph}
-        onRemoveVocabulary={onRemoveVocabulary}
       />
     </div>
   );
