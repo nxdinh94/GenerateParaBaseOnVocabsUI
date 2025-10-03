@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, User, History, Save } from 'lucide-react';
+import { LogOut, User, History, Save, ChevronRight, BookOpen, Archive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface UserDropdownProps {
@@ -13,6 +13,7 @@ interface UserDropdownProps {
 
 export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVocabsOpen, setIsVocabsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -118,6 +119,55 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
               <Save className="w-4 h-4 mr-3" />
               Đã lưu
             </button>
+
+            {/* Vocabularies Option with Dropdown */}
+            <div>
+              <button
+                className="flex items-center justify-between w-full px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                onClick={() => setIsVocabsOpen(!isVocabsOpen)}
+              >
+                <div className="flex items-center">
+                  <BookOpen className="w-4 h-4 mr-3" />
+                  Vocabularies
+                </div>
+                <ChevronRight className={`w-4 h-4 transition-transform duration-300 ease-in-out ${
+                  isVocabsOpen ? 'rotate-90' : 'rotate-0'
+                }`} />
+              </button>
+              
+              {/* Sub-items with animation */}
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isVocabsOpen 
+                  ? 'max-h-32 opacity-100' 
+                  : 'max-h-0 opacity-0'
+              }`}>
+                <div className="bg-muted/50">
+                  <button
+                    className="flex items-center w-full px-8 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsVocabsOpen(false);
+                      // TODO: Navigate to vocabs collections
+                    }}
+                  >
+                    <Archive className="w-4 h-4 mr-3" />
+                    Vocabs collections
+                  </button>
+                  
+                  <button
+                    className="flex items-center w-full px-8 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsVocabsOpen(false);
+                      // TODO: Navigate to learning vocabs history
+                    }}
+                  >
+                    <History className="w-4 h-4 mr-3" />
+                    Vocabs History
+                  </button>
+                </div>
+              </div>
+            </div>
             
             {/* Logout Option */}
             <button
