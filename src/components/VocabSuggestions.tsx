@@ -231,7 +231,14 @@ export const VocabSuggestions: React.FC<VocabSuggestionsProps> = ({
       {/* Empty State */}
       {!isLoading && !error && vocabData && displayedVocabs.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">No vocabulary suggestions available</p>
+          <p className="text-muted-foreground">
+            {vocabData.message || 'No vocabulary suggestions available'}
+          </p>
+          {vocabData.message && vocabData.message.includes('No collections available') && (
+            <p className="text-sm text-muted-foreground mt-2">
+              💡 Create a vocabulary collection to start seeing personalized suggestions
+            </p>
+          )}
         </div>
       )}
 

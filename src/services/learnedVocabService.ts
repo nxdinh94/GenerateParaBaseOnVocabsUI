@@ -3,6 +3,7 @@ import { apiClient, handleApiError } from './apiClient';
 
 export interface LearnedVocabRequest {
   vocabs: string[];
+  collection_id: string;
 }
 
 export interface LearnedVocabResponse {
@@ -15,10 +16,8 @@ export class LearnedVocabService {
   /**
    * Mark vocabularies as learned by sending them to the learned-vocabs API
    */
-  async markVocabulariesAsLearned(vocabularies: string[]): Promise<LearnedVocabResponse> {
+  async markVocabulariesAsLearned(vocabularies: string[], collectionId: string): Promise<LearnedVocabResponse> {
     try {
-      console.log('LearnedVocabService: Marking vocabularies as learned:', vocabularies);
-      
       if (!vocabularies || vocabularies.length === 0) {
         return {
           success: false,
@@ -26,8 +25,18 @@ export class LearnedVocabService {
         };
       }
 
+      if (!collectionId || collectionId.trim().length === 0) {
+        return {
+          success: false,
+          error: 'No collection ID provided'
+        };
+      }
+
+      console.log('LearnedVocabService: Marking vocabularies as learned:', vocabularies, 'for collection:', collectionId);
+
       const requestData: LearnedVocabRequest = {
-        vocabs: vocabularies
+        vocabs: vocabularies,
+        collection_id: collectionId
       };
 
       // Call the learned-vocabs API
@@ -52,8 +61,16 @@ export class LearnedVocabService {
           error: 'Failed to mark vocabularies as learned'
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('LearnedVocabService: Failed to mark vocabularies as learned:', error);
+      
+      // Check if it's an Axios error with response data
+      if (error.response?.data?.detail?.message) {
+        return {
+          success: false,
+          error: `Backend error: ${error.response.data.detail.message}`
+        };
+      }
       
       const handledError = handleApiError(error);
       return {

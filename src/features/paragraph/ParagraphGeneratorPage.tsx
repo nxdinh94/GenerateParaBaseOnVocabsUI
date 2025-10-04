@@ -188,12 +188,21 @@ export const ParagraphGeneratorPage: React.FC = () => {
         if (isAuthenticated && vocabularies.length > 0) {
           try {
             console.log('📚 Calling learned-vocabs API for vocabularies:', vocabularies);
-            const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(vocabularies);
             
-            if (learnedResponse.success) {
-              console.log('✅ Successfully marked vocabularies as learned');
+            // Get collection ID - use first active collection or first available
+            const activeCollection = vocabCollections.find(c => c.status === true);
+            const collectionId = activeCollection?.id || vocabCollections[0]?.id;
+            
+            if (collectionId) {
+              const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(vocabularies, collectionId);
+            
+              if (learnedResponse.success) {
+                console.log('✅ Successfully marked vocabularies as learned');
+              } else {
+                console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+              }
             } else {
-              console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+              console.warn('⚠️ No collection ID available for learned vocabs API');
             }
           } catch (learnedError) {
             console.error('❌ Error calling learned-vocabs API:', learnedError);
@@ -348,12 +357,21 @@ export const ParagraphGeneratorPage: React.FC = () => {
         if (isAuthenticated && randomVocabs.length > 0) {
           try {
             console.log('📚 Calling learned-vocabs API for vocabularies:', randomVocabs);
-            const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(randomVocabs);
             
-            if (learnedResponse.success) {
-              console.log('✅ Successfully marked vocabularies as learned');
+            // Get collection ID - use first active collection or first available
+            const activeCollection = vocabCollections.find(c => c.status === true);
+            const collectionId = activeCollection?.id || vocabCollections[0]?.id;
+            
+            if (collectionId) {
+              const learnedResponse = await learnedVocabService.markVocabulariesAsLearned(randomVocabs, collectionId);
+            
+              if (learnedResponse.success) {
+                console.log('✅ Successfully marked vocabularies as learned');
+              } else {
+                console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+              }
             } else {
-              console.warn('⚠️ Failed to mark vocabularies as learned:', learnedResponse.error);
+              console.warn('⚠️ No collection ID available for learned vocabs API');
             }
           } catch (learnedError) {
             console.error('❌ Error calling learned-vocabs API:', learnedError);

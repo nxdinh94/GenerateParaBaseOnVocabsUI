@@ -9,7 +9,7 @@ import type { VocabFrequency, VocabDocument } from '../types/api';
 /**
  * Custom hook for managing vocabulary suggestions from API
  */
-export const useVocabSuggestions = () => {
+export const useVocabSuggestions = (collectionId?: string, sort: string = 'frequent') => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestionData, setSuggestionData] = useState<{ vocab: string; id?: string }[]>([]);
   const [documents, setDocuments] = useState<VocabDocument[]>([]);
@@ -33,7 +33,7 @@ export const useVocabSuggestions = () => {
     setError(null);
     
     try {
-      const response = await VocabSuggestionsService.getUniqueVocabs();
+      const response = await VocabSuggestionsService.getUniqueVocabs(collectionId, sort);
       
       if (response.success && response.data) {
         const vocabSuggestions = response.data.uniqueVocabs;
@@ -47,9 +47,13 @@ export const useVocabSuggestions = () => {
         setDocuments(response.data.documents);
         setFrequencyData(response.data.frequencyData);
         
+        // Clear any previous errors on successful load
+        setError(null);
+        
         console.log('✅ Vocabulary suggestions loaded for TagInput:', {
           suggestions: vocabSuggestions.length,
-          withIds: vocabSuggestionData.filter(item => item.id).length
+          withIds: vocabSuggestionData.filter(item => item.id).length,
+          message: response.data.message
         });
       } else {
         throw new Error(response.error || 'Failed to load vocabulary suggestions');
@@ -111,7 +115,7 @@ export const useVocabSuggestions = () => {
 
   useEffect(() => {
     loadSuggestions();
-  }, []);
+  }, [collectionId, sort]);
 
   // Listen for vocab refresh events
   useEffect(() => {

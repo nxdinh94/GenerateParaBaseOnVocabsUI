@@ -1,14 +1,70 @@
 // Service for handling vocabulary suggestions API calls
 import { apiClient, handleApiError } from './apiClient';
 import { UserApiService } from './userApiService';
+import { VocabCollectionService } from './vocabCollectionService';
 import type { UniqueVocabsApiResponse, VocabSuggestionsResponse, VocabFrequency, VocabDocument } from '../types/api';
 
 export class VocabSuggestionsService {
+  // Cache for collection ID to avoid multiple API calls
+  private static cachedCollectionId: string | null = null;
+  private static collectionCacheTime: number = 0;
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * Get a valid collection ID from user's available collections
+   * Returns the first active collection ID or null if none available
+   */
+  private static async getFirstAvailableCollectionId(): Promise<string | null> {
+    // Check cache first
+    const now = Date.now();
+    if (this.cachedCollectionId && (now - this.collectionCacheTime) < this.CACHE_DURATION) {
+      console.log('🔄 Using cached collection ID:', this.cachedCollectionId);
+      return this.cachedCollectionId;
+    }
+
+    try {
+      console.log('🔄 Fetching available collections...');
+      const collectionsResponse = await VocabCollectionService.getVocabCollections();
+      if (collectionsResponse.success && collectionsResponse.data && collectionsResponse.data.length > 0) {
+        // Find the first active collection
+        const activeCollection = collectionsResponse.data.find(c => c.status === true);
+        if (activeCollection && activeCollection.id) {
+          // Cache the result
+          this.cachedCollectionId = activeCollection.id;
+          this.collectionCacheTime = now;
+          console.log('✅ Found and cached active collection:', activeCollection.id);
+          return activeCollection.id;
+        }
+        
+        // If no active collection, use the first available collection
+        const firstCollection = collectionsResponse.data[0];
+        if (firstCollection && firstCollection.id) {
+          // Cache the result
+          this.cachedCollectionId = firstCollection.id;
+          this.collectionCacheTime = now;
+          console.log('✅ Found and cached first collection:', firstCollection.id);
+          return firstCollection.id;
+        }
+      }
+      
+      // Clear cache if no collections found
+      this.cachedCollectionId = null;
+      this.collectionCacheTime = 0;
+      return null;
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch collections for vocabulary suggestions:', error);
+      // Clear cache on error
+      this.cachedCollectionId = null;
+      this.collectionCacheTime = 0;
+      return null;
+    }
+  }
+
   /**
    * Get unique vocabularies from server with document data
    * Sorted by newest (default sort method from API)
    */
-  static async getUniqueVocabs(): Promise<VocabSuggestionsResponse> {
+  static async getUniqueVocabs(collectionId?: string, sort: string = 'frequent'): Promise<VocabSuggestionsResponse> {
     try {
       // Check authentication before making API call
       if (!UserApiService.isAuthenticated()) {
@@ -21,7 +77,41 @@ export class VocabSuggestionsService {
 
       console.log('🔄 Fetching unique vocabularies from API...');
       
-      const response = await apiClient.get<UniqueVocabsApiResponse>('/vocabs_base_on_category?sort=frequent');
+      // Get a valid collection ID (required by API and must be a valid ObjectId)
+      let finalCollectionId: string;
+      
+      if (collectionId) {
+        finalCollectionId = collectionId;
+      } else {
+        // Try to get an available collection ID from user's collections
+        const availableCollectionId = await this.getFirstAvailableCollectionId();
+        
+        if (!availableCollectionId) {
+          console.log('ℹ️ No valid collection ID available for vocabulary suggestions - returning empty data');
+          return {
+            success: true,
+            data: {
+              totalDocuments: 0,
+              documents: [],
+              uniqueVocabs: [],
+              frequencyData: [],
+              message: 'No collections available. Please create a collection to see vocabulary suggestions.'
+            }
+          };
+        }
+        
+        finalCollectionId = availableCollectionId;
+      }
+      
+      console.log(`🔄 Using collection ID: ${finalCollectionId}`);
+      
+      // Build query parameters - collection_id is required by API
+      const queryParams = new URLSearchParams({ 
+        sort,
+        collection_id: finalCollectionId
+      });
+      
+      const response = await apiClient.get<UniqueVocabsApiResponse>(`/vocabs_base_on_category?${queryParams.toString()}`);
       
       if (response.data && response.data.status) {
         // Extract all vocabularies from documents with their IDs
@@ -79,9 +169,9 @@ export class VocabSuggestionsService {
    * Get vocabulary suggestions sorted by document creation date (newest first)
    * Returns array of vocab strings with their IDs
    */
-  static async getVocabSuggestionsSorted(): Promise<{ vocab: string; id: string }[]> {
+  static async getVocabSuggestionsSorted(collectionId?: string, sort: string = 'newest'): Promise<{ vocab: string; id: string }[]> {
     try {
-      const response = await this.getUniqueVocabs();
+      const response = await this.getUniqueVocabs(collectionId, sort);
       
       if (response.success && response.data) {
         // Return vocab suggestions with their IDs from frequency data
@@ -102,9 +192,9 @@ export class VocabSuggestionsService {
   /**
    * Get top N most recent vocabularies
    */
-  static async getTopRecentVocabs(limit: number = 10): Promise<string[]> {
+  static async getTopRecentVocabs(limit: number = 10, collectionId?: string, sort: string = 'newest'): Promise<string[]> {
     try {
-      const response = await this.getUniqueVocabs();
+      const response = await this.getUniqueVocabs(collectionId, sort);
       
       if (response.success && response.data) {
         // Take top N vocabularies (already sorted by newest from API)
@@ -123,9 +213,9 @@ export class VocabSuggestionsService {
    * Refresh vocabulary data by calling the API
    * This is typically called after operations that might change vocab frequency (like generating paragraphs)
    */
-  static async refreshVocabData(): Promise<VocabSuggestionsResponse> {
+  static async refreshVocabData(collectionId?: string, sort: string = 'newest'): Promise<VocabSuggestionsResponse> {
     console.log('🔄 Refreshing vocabulary suggestions data...');
-    const response = await this.getUniqueVocabs();
+    const response = await this.getUniqueVocabs(collectionId, sort);
     
     if (response.success) {
       console.log('✅ Vocabulary suggestions data refreshed successfully');
@@ -134,5 +224,25 @@ export class VocabSuggestionsService {
     }
     
     return response;
+  }
+
+  /**
+   * Get vocabularies by collection ID with specified sort order
+   * This method follows the structure: getVocabsByCollection(collectionId, sort)
+   * Collection ID is required by the API
+   */
+  static async getVocabsByCollection(collectionId: string, sort: string = 'newest'): Promise<VocabSuggestionsResponse> {
+    console.log(`🔄 Fetching vocabularies for collection: ${collectionId} with sort: ${sort}`);
+    return await this.getUniqueVocabs(collectionId, sort);
+  }
+
+  /**
+   * Clear the cached collection ID
+   * Call this when collections are updated or user changes
+   */
+  static clearCollectionCache(): void {
+    this.cachedCollectionId = null;
+    this.collectionCacheTime = 0;
+    console.log('🔄 Collection cache cleared');
   }
 }
