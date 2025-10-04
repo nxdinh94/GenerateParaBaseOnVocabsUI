@@ -117,6 +117,14 @@ export const useVocabSuggestions = (collectionId?: string, sort: string = 'frequ
     loadSuggestions();
   }, [collectionId, sort]);
 
+  // Reload when collection ID changes
+  useEffect(() => {
+    if (collectionId) {
+      console.log('🔄 useVocabSuggestions: Collection ID changed, reloading suggestions:', collectionId);
+      loadSuggestions();
+    }
+  }, [collectionId]);
+
   // Listen for vocab refresh events
   useEffect(() => {
     const unsubscribe = vocabRefreshEventEmitter.subscribe(() => {

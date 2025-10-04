@@ -86,12 +86,16 @@ export const ParagraphGeneratorPage: React.FC = () => {
     }));
   });
 
-  // Use vocabulary suggestions hook
+  // State for current collection ID for vocab suggestions
+  const [currentCollectionId, setCurrentCollectionId] = useState<string | undefined>(undefined);
+
+  // Use vocabulary suggestions hook with current collection ID
   const { 
     suggestions: vocabularySuggestions, 
     suggestionData: vocabularySuggestionData,
-    removeSuggestion 
-  } = useVocabSuggestions();
+    removeSuggestion,
+    reload: reloadSuggestions
+  } = useVocabSuggestions(currentCollectionId);
 
   // Use authentication hook
   const { isAuthenticated } = useAuth();
@@ -109,6 +113,14 @@ export const ParagraphGeneratorPage: React.FC = () => {
             console.log('✅ Collections data:', response.data);
             console.log('✅ Active collections:', response.data.filter(c => c.status === true));
             setVocabCollections(response.data);
+            
+            // Set initial collection ID for vocab suggestions
+            const activeCollection = response.data.find(c => c.status === true);
+            const initialCollectionId = activeCollection?.id || response.data[0]?.id;
+            if (initialCollectionId && !currentCollectionId) {
+              console.log('🎯 Setting initial collection ID for vocab suggestions:', initialCollectionId);
+              setCurrentCollectionId(initialCollectionId);
+            }
           } else {
             console.warn('⚠️ Failed to load vocab collections:', response.error);
             // Fallback to empty array - component will use default collections
@@ -122,6 +134,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
       } else {
         // If not authenticated, use empty array - component will use default collections
         setVocabCollections([]);
+        setCurrentCollectionId(undefined);
       }
     };
 
@@ -493,6 +506,27 @@ export const ParagraphGeneratorPage: React.FC = () => {
     await removeSuggestion(suggestion, id);
   }, [isAuthenticated, toast, removeSuggestion]);
 
+  // Handle collection change and refresh vocabulary suggestions
+  const handleCollectionChange = useCallback(async (collectionId: string, collectionName: string) => {
+    console.log('🔄 Collection changed, refreshing vocab suggestions:', { collectionId, collectionName });
+    
+    // Update the current collection ID
+    setCurrentCollectionId(collectionId);
+    
+    // Reload vocabulary suggestions with new collection
+    try {
+      await reloadSuggestions();
+      console.log('✅ Successfully refreshed vocabulary suggestions for new collection');
+    } catch (error) {
+      console.error('❌ Error refreshing vocabulary suggestions:', error);
+      toast({
+        variant: "destructive",
+        title: "Error loading suggestions",
+        description: "Failed to load vocabulary suggestions for the selected collection",
+      });
+    }
+  }, [setCurrentCollectionId, reloadSuggestions, toast]);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="grid lg:grid-cols-4 gap-8">
@@ -514,6 +548,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
             explanationInParagraph={currentExplanationInParagraph}
             onRemoveSuggestion={handleRemoveSuggestion}
             vocabCollections={vocabCollections}
+            onCollectionChange={handleCollectionChange}
           />
         </div>
         <div className="lg:col-span-1">

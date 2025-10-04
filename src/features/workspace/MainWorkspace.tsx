@@ -24,6 +24,7 @@ interface MainWorkspaceProps {
   explanationInParagraph?: ExplanationInParagraph;
   onRemoveSuggestion?: (suggestion: string, id?: string) => void;
   vocabCollections?: VocabCollection[];
+  onCollectionChange?: (collectionId: string, collectionName: string) => void;
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -42,7 +43,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   explainVocabs,
   explanationInParagraph,
   onRemoveSuggestion,
-  vocabCollections = []
+  vocabCollections = [],
+  onCollectionChange
 }) => {
   // Default collections if API doesn't return any
   const defaultCollections: VocabCollection[] = [
@@ -98,6 +100,12 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   const handleOptionSelect = (option: VocabCollection) => {
     setSelectedCollection(option.name);
     setIsDropdownOpen(false);
+    
+    // Trigger the collection change callback to refresh vocabulary suggestions
+    if (onCollectionChange && option.id) {
+      console.log('🔄 Collection changed to:', { id: option.id, name: option.name });
+      onCollectionChange(option.id, option.name);
+    }
   };
   return (
     <div className="space-y-6">

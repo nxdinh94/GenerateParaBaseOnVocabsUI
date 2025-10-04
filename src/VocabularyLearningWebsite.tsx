@@ -6,6 +6,7 @@ import { LocalStorageService, type UserSettings } from './services/localStorageS
 import { mapUIToApiRequest } from './lib/dataMappers';
 import { useVocabSuggestions } from './hooks/useVocabSuggestions';
 import { useAuth } from './hooks/useAuth';
+import { VocabCollectionService, type VocabCollection } from './services/vocabCollectionService';
 
 // Feature components
 import { HeroSection } from './features/landing/HeroSection';
@@ -96,11 +97,21 @@ const VocabularyLearningWebsite: React.FC = () => {
   // const [isLoadingSavedParagraphs, setIsLoadingSavedParagraphs] = useState(false);
   // const [savedParagraphsError, setSavedParagraphsError] = useState<string | null>(null);
 
-  // Use vocabulary suggestions hook
-  const { suggestions: vocabularySuggestions } = useVocabSuggestions();
+  // State for current collection ID for vocab suggestions
+  const [currentCollectionId, setCurrentCollectionId] = useState<string | undefined>(undefined);
+
+  // Use vocabulary suggestions hook with current collection ID
+  const { 
+    suggestions: vocabularySuggestions, 
+    suggestionData: vocabularySuggestionData,
+    reload: reloadSuggestions
+  } = useVocabSuggestions(currentCollectionId);
 
   // Use authentication hook
   const { isAuthenticated } = useAuth();
+
+  // State for vocab collections loaded from API
+  const [vocabCollections, setVocabCollections] = useState<VocabCollection[]>([]);
 
   // State for custom languages loaded from localStorage
   const [customLanguages, setCustomLanguages] = useState<string[]>(() => {
@@ -111,6 +122,56 @@ const VocabularyLearningWebsite: React.FC = () => {
   const [customTopics, setCustomTopics] = useState<string[]>(() => {
     return LocalStorageService.getCustomTopics();
   });
+
+  // Load vocab collections when component mounts and user is authenticated
+  useEffect(() => {
+    const loadVocabCollections = async () => {
+      if (isAuthenticated) {
+        try {
+          console.log('📚 Loading vocab collections...');
+          const response = await VocabCollectionService.getVocabCollections();
+          
+          if (response.success && response.data) {
+            setVocabCollections(response.data);
+            
+            // Set initial collection ID for vocab suggestions
+            const activeCollection = response.data.find(c => c.status === true);
+            const initialCollectionId = activeCollection?.id || response.data[0]?.id;
+            if (initialCollectionId && !currentCollectionId) {
+              console.log('🎯 Setting initial collection ID for vocab suggestions:', initialCollectionId);
+              setCurrentCollectionId(initialCollectionId);
+            }
+          } else {
+            setVocabCollections([]);
+          }
+        } catch (error) {
+          console.error('❌ Error loading vocab collections:', error);
+          setVocabCollections([]);
+        }
+      } else {
+        setVocabCollections([]);
+        setCurrentCollectionId(undefined);
+      }
+    };
+
+    loadVocabCollections();
+  }, [isAuthenticated]);
+
+  // Handle collection change and refresh vocabulary suggestions
+  const handleCollectionChange = useCallback(async (collectionId: string, collectionName: string) => {
+    console.log('🔄 Collection changed, refreshing vocab suggestions:', { collectionId, collectionName });
+    
+    // Update the current collection ID
+    setCurrentCollectionId(collectionId);
+    
+    // Reload vocabulary suggestions with new collection
+    try {
+      await reloadSuggestions();
+      console.log('✅ Successfully refreshed vocabulary suggestions for new collection');
+    } catch (error) {
+      console.error('❌ Error refreshing vocabulary suggestions:', error);
+    }
+  }, [setCurrentCollectionId, reloadSuggestions]);
 
   const generateParagraph = useCallback(async () => {
     if (vocabularies.length === 0) return;
@@ -336,6 +397,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               vocabularies={vocabularies}
               setVocabularies={setVocabularies}
               vocabularySuggestions={vocabularySuggestions}
+              vocabularySuggestionData={vocabularySuggestionData}
               generateParagraph={generateParagraph}
               isLoading={isLoading}
               getRandomFromHistory={getRandomFromHistory}
@@ -346,6 +408,8 @@ const VocabularyLearningWebsite: React.FC = () => {
               isSaving={isSaving}
               explainVocabs={currentExplainVocabs}
               explanationInParagraph={currentExplanationInParagraph}
+              vocabCollections={vocabCollections}
+              onCollectionChange={handleCollectionChange}
             />
           </div>
           <div className="lg:col-span-1">
