@@ -118,7 +118,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md bg-background hover:bg-accent transition-colors duration-200"
+                className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md bg-background hover:bg-accent transition-colors duration-200 whitespace-nowrap"
               >
                 <span className="text-muted-foreground">{selectedCollection}</span>
                 <ChevronDown 
@@ -130,7 +130,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
               
               {/* Animated Dropdown */}
               <div
-                className={`absolute top-full left-0 mt-1 w-full bg-background border rounded-md shadow-lg z-50 transition-all duration-200 origin-top ${
+                className={`absolute top-full left-0 mt-1 min-w-full w-max bg-background border rounded-md shadow-lg z-50 transition-all duration-200 origin-top ${
                   isDropdownOpen
                     ? 'opacity-100 scale-y-100 translate-y-0'
                     : 'opacity-0 scale-y-0 -translate-y-2 pointer-events-none'
@@ -141,7 +141,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
                     <button
                       key={option.id}
                       onClick={() => handleOptionSelect(option)}
-                      className={`w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors duration-150 ${
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors duration-150 whitespace-nowrap ${
                         option.name === selectedCollection ? 'bg-accent' : ''
                       }`}
                     >
