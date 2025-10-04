@@ -5,6 +5,7 @@ import { mapUIToApiRequest } from '@/lib/dataMappers';
 import { useVocabSuggestions } from '@/hooks/useVocabSuggestions';
 import { useAuth } from '@/hooks/useAuth';
 import { learnedVocabService } from '@/services/learnedVocabService';
+import { VocabCollectionService, type VocabCollection } from '@/services/vocabCollectionService';
 
 // Feature components
 import { SettingsPanel } from '@/features/settings/SettingsPanel';
@@ -95,6 +96,38 @@ export const ParagraphGeneratorPage: React.FC = () => {
   // Use authentication hook
   const { isAuthenticated } = useAuth();
 
+  // Load vocab collections when component mounts and user is authenticated
+  useEffect(() => {
+    const loadVocabCollections = async () => {
+      if (isAuthenticated) {
+        try {
+          console.log('📚 Loading vocab collections...');
+          const response = await VocabCollectionService.getVocabCollections();
+          
+          if (response.success && response.data) {
+            console.log('✅ Raw API response:', response);
+            console.log('✅ Collections data:', response.data);
+            console.log('✅ Active collections:', response.data.filter(c => c.status === true));
+            setVocabCollections(response.data);
+          } else {
+            console.warn('⚠️ Failed to load vocab collections:', response.error);
+            // Fallback to empty array - component will use default collections
+            setVocabCollections([]);
+          }
+        } catch (error) {
+          console.error('❌ Error loading vocab collections:', error);
+          // Fallback to empty array - component will use default collections
+          setVocabCollections([]);
+        }
+      } else {
+        // If not authenticated, use empty array - component will use default collections
+        setVocabCollections([]);
+      }
+    };
+
+    loadVocabCollections();
+  }, [isAuthenticated]);
+
   // State for custom languages loaded from localStorage
   const [customLanguages, setCustomLanguages] = useState<string[]>(() => {
     return LocalStorageService.getCustomLanguages();
@@ -104,6 +137,9 @@ export const ParagraphGeneratorPage: React.FC = () => {
   const [customTopics, setCustomTopics] = useState<string[]>(() => {
     return LocalStorageService.getCustomTopics();
   });
+
+  // State for vocab collections loaded from API
+  const [vocabCollections, setVocabCollections] = useState<VocabCollection[]>([]);
 
   const generateParagraph = useCallback(async () => {
     if (vocabularies.length === 0) return;
@@ -459,6 +495,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
             explainVocabs={currentExplainVocabs}
             explanationInParagraph={currentExplanationInParagraph}
             onRemoveSuggestion={handleRemoveSuggestion}
+            vocabCollections={vocabCollections}
           />
         </div>
         <div className="lg:col-span-1">

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { TagInput } from '@/features/vocabulary/TagInput';
 import { ParagraphDisplay } from '@/features/paragraph/ParagraphDisplay';
 import type { VocabExplanations, ExplanationInParagraph } from '@/types/api';
+import type { VocabCollection } from '@/services/vocabCollectionService';
 
 interface MainWorkspaceProps {
   vocabularies: string[];
@@ -22,6 +23,7 @@ interface MainWorkspaceProps {
   explainVocabs?: VocabExplanations;
   explanationInParagraph?: ExplanationInParagraph;
   onRemoveSuggestion?: (suggestion: string, id?: string) => void;
+  vocabCollections?: VocabCollection[];
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -39,21 +41,45 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   isSaving,
   explainVocabs,
   explanationInParagraph,
-  onRemoveSuggestion
+  onRemoveSuggestion,
+  vocabCollections = []
 }) => {
+  // Default collections if API doesn't return any
+  const defaultCollections: VocabCollection[] = [
+    { id: 'personal', name: 'Personal', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'work', name: 'Work', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'academic', name: 'Academic', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'toefl', name: 'TOEFL Prep', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'ielts', name: 'IELTS Prep', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'business', name: 'Business English', user_id: '', created_at: '', updated_at: '', status: true },
+    { id: 'conversation', name: 'Daily Conversation', user_id: '', created_at: '', updated_at: '', status: true }
+  ];
+  
+  // Use API collections if available (filter only active ones), otherwise use default
+  const collectionOptions = vocabCollections.length > 0 
+    ? vocabCollections.filter(c => c.status === true)
+    : defaultCollections;
+  
   const [selectedCollection, setSelectedCollection] = useState('Personal');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const collectionOptions = [
-    'Personal',
-    'Work',
-    'Academic',
-    'TOEFL Prep',
-    'IELTS Prep',
-    'Business English',
-    'Daily Conversation'
-  ];
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🎯 MainWorkspace - Collections updated:', {
+      apiCollections: vocabCollections,
+      activeCollections: collectionOptions,
+      usingAPI: vocabCollections.length > 0,
+      selectedCollection
+    });
+  }, [vocabCollections, collectionOptions, selectedCollection]);
+
+  // Update selected collection when collections change from API
+  useEffect(() => {
+    if (collectionOptions.length > 0 && !collectionOptions.some(c => c.name === selectedCollection)) {
+      setSelectedCollection(collectionOptions[0].name);
+    }
+  }, [collectionOptions, selectedCollection]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,8 +95,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
     };
   }, []);
 
-  const handleOptionSelect = (option: string) => {
-    setSelectedCollection(option);
+  const handleOptionSelect = (option: VocabCollection) => {
+    setSelectedCollection(option.name);
     setIsDropdownOpen(false);
   };
   return (
@@ -105,13 +131,13 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
                 <div className="py-1">
                   {collectionOptions.map((option) => (
                     <button
-                      key={option}
+                      key={option.id}
                       onClick={() => handleOptionSelect(option)}
                       className={`w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors duration-150 ${
-                        option === selectedCollection ? 'bg-accent' : ''
+                        option.name === selectedCollection ? 'bg-accent' : ''
                       }`}
                     >
-                      {option}
+                      {option.name}
                     </button>
                   ))}
                 </div>
