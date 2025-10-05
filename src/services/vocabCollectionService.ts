@@ -1,4 +1,5 @@
 import { apiClient, handleApiError } from './apiClient';
+import type { UniqueVocabsApiResponse } from '../types/api';
 
 export interface VocabCollection {
   id: string;
@@ -55,6 +56,63 @@ export class VocabCollectionService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch vocab collections',
+      };
+    }
+  }
+
+  // Get vocab count for a specific collection
+  static async getVocabCountForCollection(collectionId: string): Promise<number> {
+    try {
+      const response = await apiClient.get<UniqueVocabsApiResponse>(`/vocabs_base_on_category?collection_id=${collectionId}&limit=1`);
+      
+      // The API response should have total_documents field
+      if (response.data && typeof response.data.total_documents === 'number') {
+        return response.data.total_documents;
+      }
+      
+      return 0;
+    } catch (error) {
+      console.error('❌ Error fetching vocab count for collection:', collectionId, error);
+      return 0;
+    }
+  }
+
+  // Extended interface for collections with vocab counts
+  static async getVocabCollectionsWithCounts(): Promise<{
+    success: boolean;
+    data?: (VocabCollection & { vocabCount: number })[];
+    error?: string;
+  }> {
+    try {
+      const collectionsResponse = await this.getVocabCollections();
+      
+      if (!collectionsResponse.success || !collectionsResponse.data) {
+        return {
+          success: false,
+          error: collectionsResponse.error || 'Failed to fetch collections'
+        };
+      }
+
+      // Get vocab counts for each collection in parallel
+      const collectionsWithCounts = await Promise.all(
+        collectionsResponse.data.map(async (collection) => {
+          const vocabCount = await this.getVocabCountForCollection(collection.id);
+          return {
+            ...collection,
+            vocabCount
+          };
+        })
+      );
+
+      return {
+        success: true,
+        data: collectionsWithCounts,
+      };
+    } catch (error) {
+      console.error('❌ Error fetching vocab collections with counts:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch vocab collections with counts',
       };
     }
   }

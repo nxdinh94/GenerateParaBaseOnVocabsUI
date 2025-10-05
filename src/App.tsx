@@ -6,6 +6,7 @@ import { ParagraphGeneratorPage } from './features/paragraph';
 import { LoginPage, SignUpPage, ForgotPasswordPage, TermsPage, PrivacyPage } from './features/auth';
 import { HistoryPageWrapper } from './features/history';
 import { SavedPageWrapper } from './features/saved';
+import { VocabCollectionsPage } from './features/vocab-collections';
 import './App.css';
 
 const App: React.FC = () => {
@@ -30,6 +31,7 @@ const App: React.FC = () => {
         {/* User Feature Pages with Layout */}
         <Route path="/history" element={<Layout><HistoryPageWrapper /></Layout>} />
         <Route path="/saved" element={<Layout><SavedPageWrapper /></Layout>} />
+        <Route path="/vocab-collections" element={<Layout><VocabCollectionsPage /></Layout>} />
         
         {/* Catch all route - redirect to landing page with Layout */}
         <Route path="*" element={<Layout><LandingPage /></Layout>} />

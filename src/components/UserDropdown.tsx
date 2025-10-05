@@ -147,7 +147,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
                     onClick={() => {
                       setIsOpen(false);
                       setIsVocabsOpen(false);
-                      // TODO: Navigate to vocabs collections
+                      navigate('/vocab-collections');
                     }}
                   >
                     <Archive className="w-4 h-4 mr-3" />
