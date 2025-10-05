@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { VocabCollectionCard } from './VocabCollectionCard';
 import { VocabCollectionService } from '@/services/vocabCollectionService';
 import type { VocabCollection } from '@/services/vocabCollectionService';
@@ -8,6 +9,7 @@ interface VocabCollectionWithCount extends VocabCollection {
 }
 
 export const VocabCollectionsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [collections, setCollections] = useState<VocabCollectionWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +39,7 @@ export const VocabCollectionsPage: React.FC = () => {
   };
 
   const handleCollectionClick = (collection: VocabCollection) => {
-    // TODO: Navigate to collection detail page or perform other actions
-    console.log('Clicked collection:', collection);
+    navigate(`/vocab-collections/${collection.id}/vocabs-list`);
   };
 
   if (loading) {
@@ -124,10 +125,25 @@ export const VocabCollectionsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Vocabulary Collections</h1>
-        <p className="text-muted-foreground">
-          You have {collections.length} collection{collections.length !== 1 ? 's' : ''}
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Vocabulary Collections</h1>
+            <p className="text-muted-foreground">
+              You have {collections.length} collection{collections.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              // TODO: Navigate to create collection page
+              console.log('Create new collection');
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors inline-flex items-center gap-2 whitespace-nowrap"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </button>
+        </div>
       </div>
       
       {/* Collections Grid - Max 4 items per row */}
@@ -139,22 +155,6 @@ export const VocabCollectionsPage: React.FC = () => {
             onClick={handleCollectionClick}
           />
         ))}
-      </div>
-
-      {/* Add New Collection Button */}
-      <div className="mt-8 text-center">
-        <button
-          onClick={() => {
-            // TODO: Navigate to create collection page
-            console.log('Create new collection');
-          }}
-          className="px-6 py-3 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors inline-flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add New Collection
-        </button>
       </div>
     </div>
   );
