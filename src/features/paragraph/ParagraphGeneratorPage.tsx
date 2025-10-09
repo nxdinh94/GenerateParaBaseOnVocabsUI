@@ -549,6 +549,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
             onRemoveSuggestion={handleRemoveSuggestion}
             vocabCollections={vocabCollections}
             onCollectionChange={handleCollectionChange}
+            onRefreshSuggestions={reloadSuggestions}
           />
         </div>
         <div className="lg:col-span-1">

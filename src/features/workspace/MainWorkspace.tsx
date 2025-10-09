@@ -25,6 +25,7 @@ interface MainWorkspaceProps {
   onRemoveSuggestion?: (suggestion: string, id?: string) => void;
   vocabCollections?: VocabCollection[];
   onCollectionChange?: (collectionId: string, collectionName: string) => void;
+  onRefreshSuggestions?: () => void; // Callback to refresh vocabulary suggestions
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -44,7 +45,8 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   explanationInParagraph,
   onRemoveSuggestion,
   vocabCollections = [],
-  onCollectionChange
+  onCollectionChange,
+  onRefreshSuggestions
 }) => {
   // Default collections if API doesn't return any
   const defaultCollections: VocabCollection[] = [
@@ -160,6 +162,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
           suggestions={vocabularySuggestions}
           suggestionData={vocabularySuggestionData}
           onRemoveSuggestion={onRemoveSuggestion}
+          onRefresh={onRefreshSuggestions}
         />
         <p className="text-sm text-muted-foreground mt-2">
           Press Ctrl+Enter to generate paragraph

@@ -9,6 +9,7 @@ interface TagInputProps {
   suggestions?: string[];
   suggestionData?: { vocab: string; id?: string }[]; // Alternative with ID data
   onRemoveSuggestion?: (suggestion: string, id?: string) => void;
+  onRefresh?: () => void; // Callback to refresh vocabulary suggestions
 }
 
 export const TagInput: React.FC<TagInputProps> = ({ 
@@ -17,7 +18,8 @@ export const TagInput: React.FC<TagInputProps> = ({
   placeholder, 
   suggestions = [],
   suggestionData = [],
-  onRemoveSuggestion
+  onRemoveSuggestion,
+  onRefresh
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -105,7 +107,14 @@ export const TagInput: React.FC<TagInputProps> = ({
             setShowSuggestions(true);
           }}
           onKeyDown={handleKeyDown}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={() => {
+            setShowSuggestions(true);
+            // Call onRefresh callback when input is focused/clicked
+            if (onRefresh) {
+              console.log('🔄 TagInput: Refreshing vocabulary suggestions on focus');
+              onRefresh();
+            }
+          }}
           placeholder={value.length === 0 ? placeholder : ''}
           className="flex-1 min-w-[120px] bg-transparent outline-none placeholder:text-muted-foreground"
         />

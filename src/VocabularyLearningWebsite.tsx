@@ -410,6 +410,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               explanationInParagraph={currentExplanationInParagraph}
               vocabCollections={vocabCollections}
               onCollectionChange={handleCollectionChange}
+              onRefreshSuggestions={reloadSuggestions}
             />
           </div>
           <div className="lg:col-span-1">
