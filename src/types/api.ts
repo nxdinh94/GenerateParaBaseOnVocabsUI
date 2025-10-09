@@ -119,7 +119,9 @@ export interface VocabFrequency {
 // New interface for unique-vocabs API response
 export interface VocabDocument {
   id: string;
-  vocabs: string[];
+  vocab: string; // Single vocab, not an array
+  collection_id: string;
+  usage_count: number;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -128,6 +130,8 @@ export interface VocabDocument {
 
 export interface UniqueVocabsApiResponse {
   status: boolean;
+  collection_id: string;
+  collection_name: string;
   total_documents: number;
   documents: VocabDocument[];
   sort: VocabDocument[];

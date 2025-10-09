@@ -119,16 +119,15 @@ export class VocabSuggestionsService {
         const uniqueVocabs: string[] = [];
         
         response.data.documents.forEach((doc: VocabDocument) => {
-          doc.vocabs.forEach((vocab: string) => {
-            if (!uniqueVocabs.includes(vocab)) {
-              uniqueVocabs.push(vocab);
-              frequencyData.push({
-                id: doc.id,
-                vocab: vocab,
-                frequency: 1 // Set frequency to 1 since the new API doesn't provide frequency
-              });
-            }
-          });
+          // Each document has a single "vocab" property, not an array "vocabs"
+          if (doc.vocab && !uniqueVocabs.includes(doc.vocab)) {
+            uniqueVocabs.push(doc.vocab);
+            frequencyData.push({
+              id: doc.id,
+              vocab: doc.vocab,
+              frequency: doc.usage_count || 1 // Use usage_count from API
+            });
+          }
         });
         
         console.log('✅ Successfully fetched unique vocabularies:', {
