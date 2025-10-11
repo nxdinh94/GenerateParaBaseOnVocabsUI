@@ -6,6 +6,7 @@ import { useVocabSuggestions } from '@/hooks/useVocabSuggestions';
 import { useAuth } from '@/hooks/useAuth';
 import { learnedVocabService } from '@/services/learnedVocabService';
 import { VocabCollectionService, type VocabCollection } from '@/services/vocabCollectionService';
+import { UserApiService } from '@/services/userApiService';
 
 // Feature components
 import { SettingsPanel } from '@/features/settings/SettingsPanel';
@@ -114,9 +115,37 @@ export const ParagraphGeneratorPage: React.FC = () => {
             console.log('✅ Active collections:', response.data.filter(c => c.status === true));
             setVocabCollections(response.data);
             
+            // Get selected_collection_id from JWT token
+            let selectedCollectionIdFromJWT: string | undefined;
+            
+            try {
+              const jwtToken = UserApiService.getStoredJwtToken();
+              if (jwtToken) {
+                const payload = UserApiService.decodeJwtToken(jwtToken);
+                if (payload && payload.selected_collection_id) {
+                  selectedCollectionIdFromJWT = payload.selected_collection_id;
+                  console.log('🎯 Found selected_collection_id in JWT:', selectedCollectionIdFromJWT);
+                }
+              }
+            } catch (error) {
+              console.error('❌ Error decoding JWT token:', error);
+            }
+            
             // Set initial collection ID for vocab suggestions
-            const activeCollection = response.data.find(c => c.status === true);
-            const initialCollectionId = activeCollection?.id || response.data[0]?.id;
+            // Priority: JWT selected_collection_id > first active collection > first collection
+            let initialCollectionId: string | undefined;
+            
+            if (selectedCollectionIdFromJWT && response.data.find(c => c.id === selectedCollectionIdFromJWT)) {
+              // Use the selected_collection_id from JWT if it exists in the collections
+              initialCollectionId = selectedCollectionIdFromJWT;
+              console.log('🎯 Using selected_collection_id from JWT:', initialCollectionId);
+            } else {
+              // Fallback to first active collection or first collection
+              const activeCollection = response.data.find(c => c.status === true);
+              initialCollectionId = activeCollection?.id || response.data[0]?.id;
+              console.log('🎯 Using fallback collection ID:', initialCollectionId);
+            }
+            
             if (initialCollectionId && !currentCollectionId) {
               console.log('🎯 Setting initial collection ID for vocab suggestions:', initialCollectionId);
               setCurrentCollectionId(initialCollectionId);

@@ -116,4 +116,33 @@ export class VocabCollectionService {
       };
     }
   }
+
+  // Change the selected collection for the user
+  static async changeSelectedCollection(collectionId: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
+    try {
+      console.log('📤 Sending change collection request for:', collectionId);
+      
+      const response = await this.makeRequest<{
+        status: boolean;
+        message?: string;
+      }>('/change-selected-collection', 'POST', {
+        selected_collection_id: collectionId
+      });
+      
+      return {
+        success: response.status,
+        message: response.message || 'Collection changed successfully',
+      };
+    } catch (error) {
+      console.error('❌ Error changing selected collection:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to change selected collection',
+      };
+    }
+  }
 }

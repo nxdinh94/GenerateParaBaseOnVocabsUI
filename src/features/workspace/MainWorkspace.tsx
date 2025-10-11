@@ -6,6 +6,9 @@ import { TagInput } from '@/features/vocabulary/TagInput';
 import { ParagraphDisplay } from '@/features/paragraph/ParagraphDisplay';
 import type { VocabExplanations, ExplanationInParagraph } from '@/types/api';
 import type { VocabCollection } from '@/services/vocabCollectionService';
+import { VocabCollectionController } from '@/controllers/vocabCollectionController';
+import { useToast } from '@/hooks/use-toast';
+import { UserApiService } from '@/services/userApiService';
 
 interface MainWorkspaceProps {
   vocabularies: string[];
@@ -65,8 +68,37 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
     : defaultCollections;
   
   const [selectedCollection, setSelectedCollection] = useState('Personal');
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  // Initialize selected collection from JWT token on mount
+  useEffect(() => {
+    const initializeSelectedCollection = () => {
+      try {
+        const jwtToken = UserApiService.getStoredJwtToken();
+        if (jwtToken) {
+          const payload = UserApiService.decodeJwtToken(jwtToken);
+          if (payload && payload.selected_collection_id) {
+            console.log('🎯 Found selected_collection_id in JWT:', payload.selected_collection_id);
+            setSelectedCollectionId(payload.selected_collection_id);
+            
+            // Find the collection by ID and set its name
+            const collection = collectionOptions.find(c => c.id === payload.selected_collection_id);
+            if (collection) {
+              console.log('✅ Setting initial collection to:', collection.name);
+              setSelectedCollection(collection.name);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error decoding JWT token:', error);
+      }
+    };
+
+    initializeSelectedCollection();
+  }, []); // Run only once on mount
 
   // Debug logging
   useEffect(() => {
@@ -74,16 +106,28 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
       apiCollections: vocabCollections,
       activeCollections: collectionOptions,
       usingAPI: vocabCollections.length > 0,
-      selectedCollection
+      selectedCollection,
+      selectedCollectionId
     });
-  }, [vocabCollections, collectionOptions, selectedCollection]);
+  }, [vocabCollections, collectionOptions, selectedCollection, selectedCollectionId]);
 
-  // Update selected collection when collections change from API
+  // Update selected collection when collections change from API or JWT selectedCollectionId is available
   useEffect(() => {
-    if (collectionOptions.length > 0 && !collectionOptions.some(c => c.name === selectedCollection)) {
-      setSelectedCollection(collectionOptions[0].name);
+    if (collectionOptions.length > 0) {
+      // If we have a selectedCollectionId from JWT, use it to set the collection
+      if (selectedCollectionId) {
+        const collection = collectionOptions.find(c => c.id === selectedCollectionId);
+        if (collection && collection.name !== selectedCollection) {
+          console.log('🔄 Updating collection from JWT selected_collection_id:', collection.name);
+          setSelectedCollection(collection.name);
+        }
+      } else if (!collectionOptions.some(c => c.name === selectedCollection)) {
+        // Fallback: if current selection is not in the list, select the first one
+        setSelectedCollection(collectionOptions[0].name);
+        setSelectedCollectionId(collectionOptions[0].id);
+      }
     }
-  }, [collectionOptions, selectedCollection]);
+  }, [collectionOptions, selectedCollectionId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -99,14 +143,36 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
     };
   }, []);
 
-  const handleOptionSelect = (option: VocabCollection) => {
+  const handleOptionSelect = async (option: VocabCollection) => {
     setSelectedCollection(option.name);
+    setSelectedCollectionId(option.id);
     setIsDropdownOpen(false);
     
-    // Trigger the collection change callback to refresh vocabulary suggestions
-    if (onCollectionChange && option.id) {
-      console.log('🔄 Collection changed to:', { id: option.id, name: option.name });
-      onCollectionChange(option.id, option.name);
+    // Call API to change selected collection
+    if (option.id) {
+      console.log('🔄 Changing selected collection to:', { id: option.id, name: option.name });
+      
+      const response = await VocabCollectionController.changeSelectedCollection(option.id);
+      
+      if (response.success) {
+        console.log('✅ Collection changed successfully');
+        toast({
+          title: "Collection Changed",
+          description: `Switched to ${option.name} collection`,
+        });
+        
+        // Trigger the collection change callback to refresh vocabulary suggestions
+        if (onCollectionChange) {
+          onCollectionChange(option.id, option.name);
+        }
+      } else {
+        console.error('❌ Failed to change collection:', response.error);
+        toast({
+          title: "Error",
+          description: response.error || "Failed to change collection",
+          variant: "destructive",
+        });
+      }
     }
   };
   return (
