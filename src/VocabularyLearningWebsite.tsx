@@ -112,6 +112,7 @@ const VocabularyLearningWebsite: React.FC = () => {
 
   // State for vocab collections loaded from API
   const [vocabCollections, setVocabCollections] = useState<VocabCollection[]>([]);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
 
   // State for custom languages loaded from localStorage
   const [customLanguages, setCustomLanguages] = useState<string[]>(() => {
@@ -127,6 +128,7 @@ const VocabularyLearningWebsite: React.FC = () => {
   useEffect(() => {
     const loadVocabCollections = async () => {
       if (isAuthenticated) {
+        setIsLoadingCollections(true);
         try {
           console.log('📚 Loading vocab collections...');
           const response = await VocabCollectionService.getVocabCollections();
@@ -147,10 +149,13 @@ const VocabularyLearningWebsite: React.FC = () => {
         } catch (error) {
           console.error('❌ Error loading vocab collections:', error);
           setVocabCollections([]);
+        } finally {
+          setIsLoadingCollections(false);
         }
       } else {
         setVocabCollections([]);
         setCurrentCollectionId(undefined);
+        setIsLoadingCollections(false);
       }
     };
 
@@ -411,6 +416,7 @@ const VocabularyLearningWebsite: React.FC = () => {
               vocabCollections={vocabCollections}
               onCollectionChange={handleCollectionChange}
               onRefreshSuggestions={reloadSuggestions}
+              isLoadingCollections={isLoadingCollections}
             />
           </div>
           <div className="lg:col-span-1">

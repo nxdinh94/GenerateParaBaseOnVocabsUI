@@ -29,6 +29,7 @@ interface MainWorkspaceProps {
   vocabCollections?: VocabCollection[];
   onCollectionChange?: (collectionId: string, collectionName: string) => void;
   onRefreshSuggestions?: () => void; // Callback to refresh vocabulary suggestions
+  isLoadingCollections?: boolean; // Loading state for collections
 }
 
 export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
@@ -49,23 +50,11 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   onRemoveSuggestion,
   vocabCollections = [],
   onCollectionChange,
-  onRefreshSuggestions
+  onRefreshSuggestions,
+  isLoadingCollections = false
 }) => {
-  // Default collections if API doesn't return any
-  const defaultCollections: VocabCollection[] = [
-    { id: 'personal', name: 'Personal', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'work', name: 'Work', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'academic', name: 'Academic', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'toefl', name: 'TOEFL Prep', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'ielts', name: 'IELTS Prep', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'business', name: 'Business English', user_id: '', created_at: '', updated_at: '', status: true },
-    { id: 'conversation', name: 'Daily Conversation', user_id: '', created_at: '', updated_at: '', status: true }
-  ];
-  
-  // Use API collections if available (filter only active ones), otherwise use default
-  const collectionOptions = vocabCollections.length > 0 
-    ? vocabCollections.filter(c => c.status === true)
-    : defaultCollections;
+  // Use API collections (filter only active ones)
+  const collectionOptions = vocabCollections.filter(c => c.status === true);
   
   const [selectedCollection, setSelectedCollection] = useState('Personal');
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
@@ -186,14 +175,26 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md bg-background hover:bg-accent transition-colors duration-200 whitespace-nowrap"
+                disabled={isLoadingCollections || collectionOptions.length === 0}
+                className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md bg-background hover:bg-accent transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="text-muted-foreground">{selectedCollection}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+                {isLoadingCollections ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                    <span className="text-muted-foreground">Loading...</span>
+                  </>
+                ) : collectionOptions.length === 0 ? (
+                  <span className="text-muted-foreground">No collections</span>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground">{selectedCollection}</span>
+                    <ChevronDown 
+                      className={`h-4 w-4 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </>
+                )}
               </button>
               
               {/* Animated Dropdown */}

@@ -90,6 +90,10 @@ export const ParagraphGeneratorPage: React.FC = () => {
   // State for current collection ID for vocab suggestions
   const [currentCollectionId, setCurrentCollectionId] = useState<string | undefined>(undefined);
 
+  // State for vocab collections loaded from API
+  const [vocabCollections, setVocabCollections] = useState<VocabCollection[]>([]);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+
   // Use vocabulary suggestions hook with current collection ID
   const { 
     suggestions: vocabularySuggestions, 
@@ -105,6 +109,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
   useEffect(() => {
     const loadVocabCollections = async () => {
       if (isAuthenticated) {
+        setIsLoadingCollections(true);
         try {
           console.log('📚 Loading vocab collections...');
           const response = await VocabCollectionService.getVocabCollections();
@@ -152,18 +157,19 @@ export const ParagraphGeneratorPage: React.FC = () => {
             }
           } else {
             console.warn('⚠️ Failed to load vocab collections:', response.error);
-            // Fallback to empty array - component will use default collections
             setVocabCollections([]);
           }
         } catch (error) {
           console.error('❌ Error loading vocab collections:', error);
-          // Fallback to empty array - component will use default collections
           setVocabCollections([]);
+        } finally {
+          setIsLoadingCollections(false);
         }
       } else {
-        // If not authenticated, use empty array - component will use default collections
+        // If not authenticated, clear collections
         setVocabCollections([]);
         setCurrentCollectionId(undefined);
+        setIsLoadingCollections(false);
       }
     };
 
@@ -179,9 +185,6 @@ export const ParagraphGeneratorPage: React.FC = () => {
   const [customTopics, setCustomTopics] = useState<string[]>(() => {
     return LocalStorageService.getCustomTopics();
   });
-
-  // State for vocab collections loaded from API
-  const [vocabCollections, setVocabCollections] = useState<VocabCollection[]>([]);
 
   const generateParagraph = useCallback(async () => {
     if (vocabularies.length === 0) return;
@@ -579,6 +582,7 @@ export const ParagraphGeneratorPage: React.FC = () => {
             vocabCollections={vocabCollections}
             onCollectionChange={handleCollectionChange}
             onRefreshSuggestions={reloadSuggestions}
+            isLoadingCollections={isLoadingCollections}
           />
         </div>
         <div className="lg:col-span-1">
