@@ -18,6 +18,7 @@ import { ForgotPasswordModal } from '@/components/ForgotPasswordModal';
 import { UserDropdown } from '@/components/UserDropdown';
 import { useAuth } from '@/hooks/useAuth';
 import fireIcon from '@/assets/noto_fire.svg';
+import deactivatedFireIcon from '@/assets/noto_deactivate_fire.svg';
 import coinIcon from '@/assets/coin.svg';
 
 interface NavigationProps {
@@ -25,19 +26,77 @@ interface NavigationProps {
   setDarkMode: (value: boolean) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (value: boolean) => void;
+  streakCount?: number;
+  isStreakQualified?: boolean;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   darkMode,
   setDarkMode,
   isMobileMenuOpen,
-  setIsMobileMenuOpen
+  setIsMobileMenuOpen,
+  streakCount = 0,
+  isStreakQualified = false
 }) => {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [signUpModalOpen, setSignUpModalOpen] = useState(false);
   const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, refreshAuth } = useAuth();
+
+  // Determine fire icon based on streak status
+  const currentFireIcon = (streakCount >= 5 && isStreakQualified) ? fireIcon : deactivatedFireIcon;
+
+  // Generate dynamic border gradient based on streak count
+  const getStreakBorderGradient = () => {
+    const activeColor = '#FF9800'; // Orange color for active streaks
+    const inactiveColor = 'rgb(209, 213, 219)'; // Gray-300 for inactive
+    
+    // If all 4 parts should be highlighted (count >= 5 and qualified)
+    if (streakCount >= 5 && isStreakQualified) {
+      return `
+        linear-gradient(white, white) padding-box,
+        conic-gradient(
+          from 0deg,
+          ${activeColor} 0deg 85deg,
+          transparent 85deg 95deg,
+          ${activeColor} 95deg 175deg,
+          transparent 175deg 185deg,
+          ${activeColor} 185deg 265deg,
+          transparent 265deg 275deg,
+          ${activeColor} 275deg 355deg,
+          transparent 355deg 360deg
+        ) border-box
+      `;
+    }
+    
+    // Calculate which parts should be active based on count (1-4)
+    const activeParts = Math.min(Math.max(streakCount, 0), 4);
+    
+    // Each part represents approximately 90 degrees (360/4)
+    // Part 1: 0-85deg, Part 2: 95-175deg, Part 3: 185-265deg, Part 4: 275-355deg
+    const parts = [
+      { start: 0, end: 85 },
+      { start: 95, end: 175 },
+      { start: 185, end: 265 },
+      { start: 275, end: 355 }
+    ];
+    
+    let gradientStops = 'from 0deg,';
+    
+    parts.forEach((part, index) => {
+      const color = index < activeParts ? activeColor : inactiveColor;
+      gradientStops += `
+        ${color} ${part.start}deg ${part.end}deg,
+        transparent ${part.end}deg ${part.end + 10}deg${index < parts.length - 1 ? ',' : ''}
+      `;
+    });
+    
+    return `
+      linear-gradient(white, white) padding-box,
+      conic-gradient(${gradientStops}) border-box
+    `;
+  };
 
   const handleLoginClick = () => {
     setLoginModalOpen(true);
@@ -114,24 +173,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                 style={{
                   borderRightStyle: 'dashed',
                   borderRadius: '50%',
-                  background: `
-                    linear-gradient(white, white) padding-box,
-                    conic-gradient(
-                      from 0deg,
-                      rgb(209, 213, 219) 0deg 85deg,
-                      transparent 85deg 95deg,
-                      rgb(209, 213, 219) 95deg 175deg,
-                      transparent 175deg 185deg,
-                      rgb(209, 213, 219) 185deg 265deg,
-                      transparent 265deg 275deg,
-                      rgb(209, 213, 219) 275deg 355deg,
-                      transparent 355deg 360deg
-                    ) border-box
-                  `,
+                  background: getStreakBorderGradient(),
                   border: '3px solid transparent'
                 }}
               >
-                <img src={fireIcon} alt="Streak" className="h-5 w-5" />
+                <img src={currentFireIcon} alt="Streak" className="h-5 w-5" />
               </button>
               
               {/* Coin Button */}
