@@ -17,6 +17,8 @@ import { SignUpModal } from '@/components/SignUpModal';
 import { ForgotPasswordModal } from '@/components/ForgotPasswordModal';
 import { UserDropdown } from '@/components/UserDropdown';
 import { useAuth } from '@/hooks/useAuth';
+import fireIcon from '@/assets/noto_fire.svg';
+import coinIcon from '@/assets/coin.svg';
 
 interface NavigationProps {
   darkMode: boolean;
@@ -104,6 +106,41 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Right side */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Streak and Coins Container */}
+            <div className="flex items-center border border-border rounded-full overflow-visible group hover:bg-accent transition-colors">
+              {/* Fire Icon Button */}
+              <button 
+                className="p-2 transition-colors border-r border-border relative"
+                style={{
+                  borderRightStyle: 'dashed',
+                  borderRadius: '50%',
+                  background: `
+                    linear-gradient(white, white) padding-box,
+                    conic-gradient(
+                      from 0deg,
+                      rgb(209, 213, 219) 0deg 85deg,
+                      transparent 85deg 95deg,
+                      rgb(209, 213, 219) 95deg 175deg,
+                      transparent 175deg 185deg,
+                      rgb(209, 213, 219) 185deg 265deg,
+                      transparent 265deg 275deg,
+                      rgb(209, 213, 219) 275deg 355deg,
+                      transparent 355deg 360deg
+                    ) border-box
+                  `,
+                  border: '3px solid transparent'
+                }}
+              >
+                <img src={fireIcon} alt="Streak" className="h-5 w-5" />
+              </button>
+              
+              {/* Coin Button */}
+              <button className="flex items-center gap-2 px-3 py-2 transition-colors rounded-r-full">
+                <img src={coinIcon} alt="Coins" className="h-5 w-5" />
+                <span className="text-sm font-medium">100 coins</span>
+              </button>
+            </div>
+
             <Button
               variant="ghost"
               size="icon"

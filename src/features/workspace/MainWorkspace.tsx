@@ -145,22 +145,12 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
       
       if (response.success) {
         console.log('✅ Collection changed successfully');
-        toast({
-          title: "Collection Changed",
-          description: `Switched to ${option.name} collection`,
-        });
-        
         // Trigger the collection change callback to refresh vocabulary suggestions
         if (onCollectionChange) {
           onCollectionChange(option.id, option.name);
         }
       } else {
         console.error('❌ Failed to change collection:', response.error);
-        toast({
-          title: "Error",
-          description: response.error || "Failed to change collection",
-          variant: "destructive",
-        });
       }
     }
   };
