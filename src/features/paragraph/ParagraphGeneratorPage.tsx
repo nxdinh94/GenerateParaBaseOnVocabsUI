@@ -7,6 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { learnedVocabService } from '@/services/learnedVocabService';
 import { VocabCollectionService, type VocabCollection } from '@/services/vocabCollectionService';
 import { UserApiService } from '@/services/userApiService';
+import { StreakService } from '@/services/streakService';
+import { streakEvents } from '@/utils/streakEvents';
 
 // Feature components
 import { SettingsPanel } from '@/features/settings/SettingsPanel';
@@ -254,6 +256,25 @@ export const ParagraphGeneratorPage: React.FC = () => {
           }
         } else {
           console.log('ℹ️ Skipping learned-vocabs API call - user not authenticated or no vocabularies');
+        }
+
+        // Call streak API after successful paragraph generation
+        if (isAuthenticated) {
+          try {
+            console.log('🔥 Calling streak API to update streak count...');
+            const streakResponse = await StreakService.updateStreak();
+            
+            console.log('✅ Streak updated successfully:', streakResponse);
+            
+            // Emit event to update streak in navigation
+            streakEvents.emit({
+              count: streakResponse.count,
+              is_qualify: streakResponse.is_qualify
+            });
+          } catch (streakError) {
+            console.error('❌ Error calling streak API:', streakError);
+            // Don't block the main flow if streak update fails
+          }
         }
       } else {
         // Handle API error

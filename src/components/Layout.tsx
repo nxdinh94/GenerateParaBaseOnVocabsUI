@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { StreakService } from '@/services/streakService';
 import { useAuth } from '@/hooks/useAuth';
+import { streakEvents } from '@/utils/streakEvents';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,6 +41,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     fetchStreakStatus();
   }, [location.pathname, isAuthenticated]);
+
+  // Listen for streak updates from paragraph generation
+  useEffect(() => {
+    const unsubscribe = streakEvents.subscribe((data) => {
+      console.log('🔥 Streak updated:', data);
+      setStreakCount(data.count);
+      setIsStreakQualified(data.is_qualify);
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <div className={cn("min-h-screen bg-background", darkMode && "dark")}>

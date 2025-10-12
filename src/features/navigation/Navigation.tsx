@@ -41,8 +41,18 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [signUpModalOpen, setSignUpModalOpen] = useState(false);
   const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
+  const [isStreakAnimating, setIsStreakAnimating] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout, refreshAuth } = useAuth();
+
+  // Trigger animation when streak count changes
+  React.useEffect(() => {
+    if (streakCount > 0) {
+      setIsStreakAnimating(true);
+      const timer = setTimeout(() => setIsStreakAnimating(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [streakCount, isStreakQualified]);
 
   // Determine fire icon based on streak status
   const currentFireIcon = (streakCount >= 5 && isStreakQualified) ? fireIcon : deactivatedFireIcon;
@@ -169,15 +179,24 @@ export const Navigation: React.FC<NavigationProps> = ({
             <div className="flex items-center border border-border rounded-full overflow-visible group hover:bg-accent transition-colors">
               {/* Fire Icon Button */}
               <button 
-                className="p-2 transition-colors border-r border-border relative"
+                className={`p-2 transition-all duration-500 border-r border-border relative ${
+                  isStreakAnimating ? 'animate-pulse scale-110' : ''
+                }`}
                 style={{
                   borderRightStyle: 'dashed',
                   borderRadius: '50%',
                   background: getStreakBorderGradient(),
-                  border: '3px solid transparent'
+                  border: '3px solid transparent',
+                  transition: 'transform 0.5s ease-in-out, background 0.8s ease-in-out'
                 }}
               >
-                <img src={currentFireIcon} alt="Streak" className="h-5 w-5" />
+                <img 
+                  src={currentFireIcon} 
+                  alt="Streak" 
+                  className={`h-5 w-5 transition-all duration-500 ${
+                    isStreakAnimating ? 'scale-125' : ''
+                  }`}
+                />
               </button>
               
               {/* Coin Button */}
