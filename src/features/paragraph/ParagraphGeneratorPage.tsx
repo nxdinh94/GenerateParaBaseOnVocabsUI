@@ -259,18 +259,27 @@ export const ParagraphGeneratorPage: React.FC = () => {
         }
 
         // Call streak API after successful paragraph generation
+        // Skip if already at max streak (count == 5 and is_qualify == true)
         if (isAuthenticated) {
           try {
-            console.log('🔥 Calling streak API to update streak count...');
-            const streakResponse = await StreakService.updateStreak();
+            // First check current streak status
+            const currentStreak = await StreakService.getTodayStreakStatus();
             
-            console.log('✅ Streak updated successfully:', streakResponse);
-            
-            // Emit event to update streak in navigation
-            streakEvents.emit({
-              count: streakResponse.count,
-              is_qualify: streakResponse.is_qualify
-            });
+            // Stop calling streak API if already qualified with count 5
+            if (currentStreak.is_qualify === true) {
+              console.log('ℹ️ Skipping streak API - already at max streak (count=5, qualified=true)');
+            } else {
+              console.log('🔥 Calling streak API to update streak count...');
+              const streakResponse = await StreakService.updateStreak();
+              
+              console.log('✅ Streak updated successfully:', streakResponse);
+              
+              // Emit event to update streak in navigation
+              streakEvents.emit({
+                count: streakResponse.count,
+                is_qualify: streakResponse.is_qualify
+              });
+            }
           } catch (streakError) {
             console.error('❌ Error calling streak API:', streakError);
             // Don't block the main flow if streak update fails
