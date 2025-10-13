@@ -23,7 +23,7 @@ export class StreakService {
    */
   static async getTodayStreakStatus(): Promise<StreakStatus> {
     try {
-      const response = await apiClient.get<StreakStatus>('/today-streak-status');
+      const response = await apiClient.get<StreakStatus>('/today-yesterday-streak-status?date=today');
       return response.data;
     } catch (error) {
       throw handleApiError(error);
