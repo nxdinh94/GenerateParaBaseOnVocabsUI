@@ -21,39 +21,18 @@ import fireIcon from '@/assets/noto_fire.svg';
 import deactivatedFireIcon from '@/assets/noto_deactivate_fire.svg';
 import coinIcon from '@/assets/coin.svg';
 
-interface NavigationProps {
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
-  isMobileMenuOpen: boolean;
-  setIsMobileMenuOpen: (value: boolean) => void;
-  streakCount?: number;
-  isStreakQualified?: boolean;
+// Streak Button Component
+interface StreakButtonProps {
+  streakCount: number;
+  isStreakQualified: boolean;
+  isStreakAnimating: boolean;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({
-  darkMode,
-  setDarkMode,
-  isMobileMenuOpen,
-  setIsMobileMenuOpen,
-  streakCount = 0,
-  isStreakQualified = false
+const StreakButton: React.FC<StreakButtonProps> = ({ 
+  streakCount, 
+  isStreakQualified, 
+  isStreakAnimating 
 }) => {
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [signUpModalOpen, setSignUpModalOpen] = useState(false);
-  const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
-  const [isStreakAnimating, setIsStreakAnimating] = useState(false);
-  const navigate = useNavigate();
-  const { isAuthenticated, user, logout, refreshAuth } = useAuth();
-
-  // Trigger animation when streak count changes
-  React.useEffect(() => {
-    if (streakCount > 0) {
-      setIsStreakAnimating(true);
-      const timer = setTimeout(() => setIsStreakAnimating(false), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [streakCount, isStreakQualified]);
-
   // Determine fire icon based on streak status
   const currentFireIcon = (streakCount >= 5 && isStreakQualified) ? fireIcon : deactivatedFireIcon;
 
@@ -107,6 +86,105 @@ export const Navigation: React.FC<NavigationProps> = ({
       conic-gradient(${gradientStops}) border-box
     `;
   };
+
+  return (
+    <button 
+      className={`p-2 transition-all duration-500 border-r border-border relative ${
+        isStreakAnimating ? 'animate-pulse scale-110' : ''
+      }`}
+      style={{
+        borderRightStyle: 'dashed',
+        borderRadius: '50%',
+        background: getStreakBorderGradient(),
+        border: '3px solid transparent',
+        transition: 'transform 0.5s ease-in-out, background 0.8s ease-in-out'
+      }}
+    >
+      <img 
+        src={currentFireIcon} 
+        alt="Streak" 
+        className={`h-5 w-5 transition-all duration-500 ${
+          isStreakAnimating ? 'scale-125' : ''
+        }`}
+      />
+    </button>
+  );
+};
+
+// Coin Button Component
+const CoinButton: React.FC = () => {
+  return (
+    <button className="flex items-center gap-2 px-3 py-2 transition-colors rounded-r-full">
+      <img src={coinIcon} alt="Coins" className="h-5 w-5" />
+      <span className="text-sm font-medium">100 coins</span>
+    </button>
+  );
+};
+
+// Dark Mode Toggle Component
+interface DarkModeToggleProps {
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
+}
+
+const DarkModeToggle: React.FC<DarkModeToggleProps> = ({ darkMode, setDarkMode }) => {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setDarkMode(!darkMode)}
+    >
+      {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+};
+
+// Login Button Component
+interface LoginButtonProps {
+  onClick: () => void;
+}
+
+const LoginButton: React.FC<LoginButtonProps> = ({ onClick }) => {
+  return (
+    <Button variant="ghost" size="sm" onClick={onClick}>
+      <LogIn className="h-4 w-4 mr-2" />
+      Login
+    </Button>
+  );
+};
+
+interface NavigationProps {
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (value: boolean) => void;
+  streakCount?: number;
+  isStreakQualified?: boolean;
+}
+
+export const Navigation: React.FC<NavigationProps> = ({
+  darkMode,
+  setDarkMode,
+  isMobileMenuOpen,
+  setIsMobileMenuOpen,
+  streakCount = 0,
+  isStreakQualified = false
+}) => {
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [signUpModalOpen, setSignUpModalOpen] = useState(false);
+  const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
+  const [isStreakAnimating, setIsStreakAnimating] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout, refreshAuth } = useAuth();
+
+  // Trigger animation when streak count changes
+  React.useEffect(() => {
+    if (streakCount > 0) {
+      setIsStreakAnimating(true);
+      const timer = setTimeout(() => setIsStreakAnimating(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [streakCount, isStreakQualified]);
 
   const handleLoginClick = () => {
     setLoginModalOpen(true);
@@ -175,52 +253,24 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Right side */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Streak and Coins Container */}
-            <div className="flex items-center border border-border rounded-full overflow-visible group hover:bg-accent transition-colors">
-              {/* Fire Icon Button */}
-              <button 
-                className={`p-2 transition-all duration-500 border-r border-border relative ${
-                  isStreakAnimating ? 'animate-pulse scale-110' : ''
-                }`}
-                style={{
-                  borderRightStyle: 'dashed',
-                  borderRadius: '50%',
-                  background: getStreakBorderGradient(),
-                  border: '3px solid transparent',
-                  transition: 'transform 0.5s ease-in-out, background 0.8s ease-in-out'
-                }}
-              >
-                <img 
-                  src={currentFireIcon} 
-                  alt="Streak" 
-                  className={`h-5 w-5 transition-all duration-500 ${
-                    isStreakAnimating ? 'scale-125' : ''
-                  }`}
+            {/* Streak and Coins Container - Only show when authenticated */}
+            {isAuthenticated && (
+              <div className="flex items-center border border-border rounded-full overflow-visible group hover:bg-accent transition-colors">
+                <StreakButton 
+                  streakCount={streakCount}
+                  isStreakQualified={isStreakQualified}
+                  isStreakAnimating={isStreakAnimating}
                 />
-              </button>
-              
-              {/* Coin Button */}
-              <button className="flex items-center gap-2 px-3 py-2 transition-colors rounded-r-full">
-                <img src={coinIcon} alt="Coins" className="h-5 w-5" />
-                <span className="text-sm font-medium">100 coins</span>
-              </button>
-            </div>
+                <CoinButton />
+              </div>
+            )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setDarkMode(!darkMode)}
-            >
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+            <DarkModeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
             
             {isAuthenticated && user ? (
               <UserDropdown user={user} onLogout={handleLogout} />
             ) : (
-              <Button variant="ghost" size="sm" onClick={handleLoginClick}>
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </Button>
+              <LoginButton onClick={handleLoginClick} />
             )}
           </div>
 
