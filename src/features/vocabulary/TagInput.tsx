@@ -129,11 +129,12 @@ export const TagInput: React.FC<TagInputProps> = ({
               onMouseEnter={() => setHoveredSuggestion(suggestionItem.vocab)}
               onMouseLeave={() => setHoveredSuggestion(null)}
             >
-              <button
-                onClick={() => addTag(suggestionItem.vocab)}
-                className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground text-sm flex items-center justify-between"
+              <div
+                className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground text-sm flex items-center justify-between cursor-pointer"
               >
-                <span>{suggestionItem.vocab}</span>
+                <span onClick={() => addTag(suggestionItem.vocab)} className="flex-1">
+                  {suggestionItem.vocab}
+                </span>
                 {hoveredSuggestion === suggestionItem.vocab && onRemoveSuggestion && (
                   <button
                     onClick={(e) => handleRemoveSuggestion(e, suggestionItem)}
@@ -143,7 +144,7 @@ export const TagInput: React.FC<TagInputProps> = ({
                     <X className="h-3 w-3" />
                   </button>
                 )}
-              </button>
+              </div>
             </div>
           ))}
           {filteredSuggestions.length > 50 && (

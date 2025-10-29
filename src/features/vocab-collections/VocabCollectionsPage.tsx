@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { VocabCollectionCard } from './VocabCollectionCard';
 import { VocabCollectionService } from '@/services/vocabCollectionService';
 import type { VocabCollection } from '@/services/vocabCollectionService';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface VocabCollectionWithCount extends VocabCollection {
   vocabCount: number;
@@ -41,10 +43,14 @@ export const VocabCollectionsPage: React.FC = () => {
   const handleCollectionClick = (collection: VocabCollection) => {
     navigate(`/vocab-collections/${collection.id}/vocabs-list`);
   };
+  const handleBack = () => {
+    navigate('/paragraph');
+  };
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
+        
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">Vocabulary Collections</h1>
           <p className="text-muted-foreground">Manage your vocabulary collections</p>
@@ -125,6 +131,12 @@ export const VocabCollectionsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
+        <div>
+          <Button variant="ghost" onClick={handleBack} className="mb-4 px-0">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Paragraphs Generator
+          </Button>
+        </div>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Vocabulary Collections</h1>

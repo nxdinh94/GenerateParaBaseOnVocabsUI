@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { VocabSuggestionsService } from '@/services/vocabSuggestionsService';
 import { VocabCollectionService } from '@/services/vocabCollectionService';
+import { learnedVocabService } from '@/services/learnedVocabService';
+import { AddVocabModal } from './AddVocabModal';
+import { useToast } from '@/hooks/use-toast';
 import type { VocabFrequency } from '@/types/api';
 import type { VocabCollection } from '@/services/vocabCollectionService';
 
 export const VocabsListPage: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [vocabs, setVocabs] = useState<VocabFrequency[]>([]);
   const [collection, setCollection] = useState<VocabCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredVocabs, setFilteredVocabs] = useState<VocabFrequency[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     if (collectionId) {
@@ -74,11 +79,47 @@ export const VocabsListPage: React.FC = () => {
     navigate('/vocab-collections');
   };
 
+  const handleAddVocabs = async (newVocabs: string[]) => {
+    if (!collectionId) return;
+
+    try {
+      console.log('📚 Calling /learned-vocabs API with:', { vocabs: newVocabs, collection_id: collectionId });
+      
+      const response = await learnedVocabService.markVocabulariesAsLearned(
+        newVocabs,
+        collectionId
+      );
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: `Added ${newVocabs.length} ${newVocabs.length === 1 ? 'vocabulary' : 'vocabularies'} successfully`,
+        });
+        
+        // Refresh the vocabs list
+        await fetchVocabsAndCollection();
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to add vocabularies",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('❌ Error calling /learned-vocabs API:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button variant="ghost" onClick={handleBack} className="mb-4">
+          <Button variant="ghost" onClick={handleBack} className="mb-4 px-0">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Collections
           </Button>
@@ -102,7 +143,7 @@ export const VocabsListPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={handleBack} className="mb-6">
+        <Button variant="ghost" onClick={handleBack} className="mb-6 px-0">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Collections
         </Button>
@@ -130,14 +171,20 @@ export const VocabsListPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <Button variant="ghost" onClick={handleBack} className="mb-4">
+        <Button variant="ghost" onClick={handleBack} className="mb-4 px-0">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Collections
         </Button>
         
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          {collection?.name || 'Collection Vocabularies'}
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-foreground">
+            {collection?.name || 'Collection Vocabularies'}
+          </h1>
+          <Button onClick={() => setIsAddModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Vocabulary
+          </Button>
+        </div>
         <p className="text-muted-foreground">
           {filteredVocabs.length} vocabularies
           {searchTerm && ` (filtered from ${vocabs.length} total)`}
@@ -147,13 +194,18 @@ export const VocabsListPage: React.FC = () => {
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search vocabularies..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+          {/* hide search if no vocabularies are present */}
+          {filteredVocabs.length > 0 && (
+            <>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search vocabularies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -213,6 +265,14 @@ export const VocabsListPage: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Add Vocabulary Modal */}
+      <AddVocabModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        onAddVocabs={handleAddVocabs}
+        collectionName={collection?.name}
+      />
     </div>
   );
 };
