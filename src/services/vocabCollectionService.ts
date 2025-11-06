@@ -145,4 +145,34 @@ export class VocabCollectionService {
       };
     }
   }
+
+  // Create a new vocab collection
+  static async createVocabCollection(name: string): Promise<{
+    success: boolean;
+    data?: VocabCollection;
+    error?: string;
+  }> {
+    try {
+      console.log('📤 Creating new vocab collection:', name);
+      
+      const response = await this.makeRequest<{
+        status: boolean;
+        collection?: VocabCollection;
+        message?: string;
+      }>('/vocab-collections', 'POST', {
+        name
+      });
+      
+      return {
+        success: response.status,
+        data: response.collection,
+      };
+    } catch (error) {
+      console.error('❌ Error creating vocab collection:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create vocab collection',
+      };
+    }
+  }
 }

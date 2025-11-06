@@ -5,6 +5,7 @@ import { VocabCollectionService } from '@/services/vocabCollectionService';
 import type { VocabCollection } from '@/services/vocabCollectionService';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { AddCollectionModal } from '@/components/AddCollectionModal';
 
 interface VocabCollectionWithCount extends VocabCollection {
   vocabCount: number;
@@ -15,6 +16,7 @@ export const VocabCollectionsPage: React.FC = () => {
   const [collections, setCollections] = useState<VocabCollectionWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -45,6 +47,14 @@ export const VocabCollectionsPage: React.FC = () => {
   };
   const handleBack = () => {
     navigate('/paragraph');
+  };
+
+  const handleAddCollection = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddSuccess = () => {
+    fetchCollections();
   };
 
   if (loading) {
@@ -115,10 +125,7 @@ export const VocabCollectionsPage: React.FC = () => {
             You don't have any vocabulary collections yet.
           </p>
           <button
-            onClick={() => {
-              // TODO: Navigate to create collection page
-              console.log('Create new collection');
-            }}
+            onClick={handleAddCollection}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             Create Your First Collection
@@ -145,10 +152,7 @@ export const VocabCollectionsPage: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => {
-              // TODO: Navigate to create collection page
-              console.log('Create new collection');
-            }}
+            onClick={handleAddCollection}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors inline-flex items-center gap-2 whitespace-nowrap"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,6 +172,13 @@ export const VocabCollectionsPage: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Add Collection Modal */}
+      <AddCollectionModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   );
 };
