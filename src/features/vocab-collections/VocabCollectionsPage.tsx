@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VocabCollectionCard } from './VocabCollectionCard';
+import { DeleteCollectionModal } from './DeleteCollectionModal';
 import { VocabCollectionService } from '@/services/vocabCollectionService';
 import type { VocabCollection } from '@/services/vocabCollectionService';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { AddCollectionModal } from '@/components/AddCollectionModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface VocabCollectionWithCount extends VocabCollection {
   vocabCount: number;
@@ -13,10 +15,21 @@ interface VocabCollectionWithCount extends VocabCollection {
 
 export const VocabCollectionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [collections, setCollections] = useState<VocabCollectionWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    collectionId: string | null;
+    collectionName: string;
+  }>({
+    isOpen: false,
+    collectionId: null,
+    collectionName: '',
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -55,6 +68,67 @@ export const VocabCollectionsPage: React.FC = () => {
 
   const handleAddSuccess = () => {
     fetchCollections();
+  };
+
+  const handleDeleteClick = (collectionId: string) => {
+    const collection = collections.find(c => c.id === collectionId);
+    if (collection) {
+      setDeleteModalState({
+        isOpen: true,
+        collectionId: collectionId,
+        collectionName: collection.name,
+      });
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModalState.collectionId) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await VocabCollectionService.deleteVocabCollection(deleteModalState.collectionId);
+
+      if (response.success) {
+        toast({
+          title: 'Success',
+          description: response.message || 'Collection deleted successfully',
+          variant: 'default',
+        });
+        
+        // Refresh collections list
+        fetchCollections();
+        
+        // Close modal
+        setDeleteModalState({
+          isOpen: false,
+          collectionId: null,
+          collectionName: '',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: response.error || 'Failed to delete collection',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred while deleting the collection',
+        variant: 'destructive',
+      });
+      console.error('Error deleting collection:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalState({
+      isOpen: false,
+      collectionId: null,
+      collectionName: '',
+    });
   };
 
   if (loading) {
@@ -169,6 +243,7 @@ export const VocabCollectionsPage: React.FC = () => {
             key={collection.id}
             collection={collection}
             onClick={handleCollectionClick}
+            onDelete={handleDeleteClick}
           />
         ))}
       </div>
@@ -178,6 +253,15 @@ export const VocabCollectionsPage: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleAddSuccess}
+      />
+
+      {/* Delete Collection Modal */}
+      <DeleteCollectionModal
+        isOpen={deleteModalState.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        collectionName={deleteModalState.collectionName}
+        isDeleting={isDeleting}
       />
     </div>
   );

@@ -175,4 +175,31 @@ export class VocabCollectionService {
       };
     }
   }
+
+  // Delete a vocab collection
+  static async deleteVocabCollection(collectionId: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
+    try {
+      console.log('📤 Deleting vocab collection:', collectionId);
+      
+      const response = await this.makeRequest<{
+        status: boolean;
+        message?: string;
+      }>(`/vocab-collections/${collectionId}`, 'DELETE');
+      
+      return {
+        success: response.status,
+        message: response.message || 'Collection deleted successfully',
+      };
+    } catch (error) {
+      console.error('❌ Error deleting vocab collection:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete vocab collection',
+      };
+    }
+  }
 }

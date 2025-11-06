@@ -56,11 +56,10 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({
   // Use API collections (filter only active ones)
   const collectionOptions = vocabCollections.filter(c => c.status === true);
   
-  const [selectedCollection, setSelectedCollection] = useState('Personal');
+  const [selectedCollection, setSelectedCollection] = useState('None');
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   // Initialize selected collection from JWT token on mount
   useEffect(() => {
